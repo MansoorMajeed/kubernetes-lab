@@ -1,6 +1,7 @@
-# Kubernetes Lab
+# [WIP] Kubernetes Lab
 A full local Kubernetes setup with monitoring, logging and demo apps - Using k3d + Tilt
 
+> Note: this is a work in progress
 
 ## Requirements
 
