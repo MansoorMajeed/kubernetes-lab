@@ -25,15 +25,15 @@ helm_resource(
 
 helm_resource(
     'loki', # Release name
-    'grafana/loki', # Chart path (repo/chart)
+    'grafana-repo/loki', # Chart path (repo/chart)
     namespace='monitoring',
-    resource_deps=['grafana'],
+    resource_deps=['grafana-repo'],
     flags=['--values', 'k8s/observability/loki-values.yaml']
 )
 
 helm_resource(
     'grafana', # Release name
-    'grafana/grafana', # Chart path (repo/chart)
+    'grafana-repo/grafana', # Chart path (repo/chart)
     namespace='monitoring',
     resource_deps=['grafana-repo'],
     flags=['--values', 'k8s/observability/grafana-values.yaml']
@@ -41,7 +41,7 @@ helm_resource(
 
 helm_resource(
     'alloy',
-    'grafana/alloy',
+    'grafana-repo/alloy',
     namespace='monitoring',
     resource_deps=['grafana-repo'],
     flags=['--values', 'k8s/observability/alloy-values.yaml']
