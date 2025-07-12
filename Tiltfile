@@ -1,9 +1,9 @@
-# Observability setup
-load('ext://helm_resource', 'helm_resource', 'helm_repo')
 
 
 k8s_yaml('k8s/observability/namespace.yaml') # Create the monitoring namespace
 
+# Observability setup
+load('ext://helm_resource', 'helm_resource', 'helm_repo')
 helm_repo('prometheus-community', 'https://prometheus-community.github.io/helm-charts')
 helm_repo('grafana', 'https://grafana.github.io/helm-charts')
 
@@ -13,7 +13,7 @@ helm_resource(
     'prometheus-community/prometheus', # Chart path (repo/chart)
     namespace='monitoring',
     resource_deps=['prometheus-community'], # Dependency on the helm_repo resource
-    flags='--values k8s/observability/prometheus-values.yaml'
+    flags=['--values', 'k8s/observability/prometheus-values.yaml']
 )
 
 helm_resource(
@@ -21,7 +21,7 @@ helm_resource(
     'grafana/loki', # Chart path (repo/chart)
     namespace='monitoring',
     resource_deps=['grafana'],
-    flags='--values k8s/observability/loki-values.yaml'
+    flags=['--values', 'k8s/observability/loki-values.yaml']
 )
 
 helm_resource(
@@ -29,7 +29,7 @@ helm_resource(
     'grafana/grafana', # Chart path (repo/chart)
     namespace='monitoring',
     resource_deps=['grafana'],
-    flags='--values k8s/observability/grafana-values.yaml'
+    flags=['--values', 'k8s/observability/grafana-values.yaml']
 )
 
 k8s_yaml('k8s/observability/ingress.yaml')
