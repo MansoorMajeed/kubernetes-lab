@@ -1,6 +1,7 @@
 
 
 k8s_yaml('k8s/observability/namespace.yaml') # Create the monitoring namespace
+k8s_yaml('k8s/apps/nginx-hello-world/namespace.yaml') # Create the monitoring namespace
 
 # Observability setup
 load('ext://helm_resource', 'helm_resource', 'helm_repo')
