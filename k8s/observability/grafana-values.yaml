@@ -13,7 +13,7 @@ datasources:
         isDefault: true
       - name: Loki
         type: loki
-        url: http://loki-stack.monitoring.svc.cluster.local:3100 # K8s DNS name for the Loki service
+        url: http://loki.monitoring.svc.cluster.local:3100 # K8s DNS name for the Loki service
         access: proxy
 
 dashboardProviders:
@@ -43,4 +43,7 @@ dashboards: # we can also load dashboards from URLs
   grafana-dashboards-kubernetes:
     k8s-views-pods:
         url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-pods.json
+        token: ''
+    loki-overview:
+        url: https://grafana.com/api/dashboards/13186/revisions/1/download
         token: ''

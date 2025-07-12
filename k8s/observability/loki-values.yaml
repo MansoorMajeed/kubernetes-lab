@@ -1,4 +1,5 @@
 loki:
+  auth_enabled: false # only for local. do not use in production
   commonConfig:
     replication_factor: 1
   schemaConfig:
@@ -10,6 +11,13 @@ loki:
         index:
           prefix: loki_index_
           period: 24h
+  ingester:
+    chunk_encoding: snappy
+  tracing:
+    enabled: true
+  querier:
+    # Default is 4, if you have enough memory and CPU you can increase, reduce if OOMing
+    max_concurrent: 1
 
 deploymentMode: SingleBinary
 singleBinary:
