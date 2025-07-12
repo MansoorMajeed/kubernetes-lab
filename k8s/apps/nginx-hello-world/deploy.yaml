@@ -15,9 +15,51 @@ spec:
     metadata:
       labels:
         app: nginx-hello-world
+      annotations:
+        # Loki structured logging annotations
+        loki.grafana.com/scrape: "true"
+        loki.grafana.com/log-format: "json"
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginx:1.25-alpine
         ports:
         - containerPort: 80
+        # Health check
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        # Mount custom nginx config
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        # Resources for better resource management
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        # Security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 101
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config

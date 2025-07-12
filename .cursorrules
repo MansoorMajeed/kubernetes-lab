@@ -26,6 +26,15 @@
 - Regular deployments preferred over DaemonSets when possible
 - Services exposed via port-forwarding for local access
 
+## Structured Logging Patterns
+- **JSON logging format** - All applications should output structured JSON logs
+- **Standard log fields** - Include timestamp, request details, response codes, performance metrics
+- **ConfigMap approach** - Use ConfigMaps to configure application logging (e.g., nginx-configmap.yaml)
+- **Loki annotations** - Add `loki.grafana.com/scrape: "true"` and `loki.grafana.com/log-format: "json"` to pod templates
+- **Automatic collection** - Alloy automatically discovers and collects logs from all pods with proper labels
+- **Health endpoints** - Include `/health` endpoints for monitoring with `access_log off` to reduce noise
+- **Log levels** - Use appropriate log levels (info, warn, error) for different types of events
+
 ## ⚠️ SAFETY WARNINGS
 - **ALWAYS use `./kubectl-lab`** - never use raw `kubectl` commands (protects against wrong context)
 - **ALWAYS use `./tilt-lab`** -- which is preconfigured with appropriate kubeconfig
@@ -36,13 +45,22 @@
 - `./start-lab.sh` - Start the k3d environment
 - `./kubectl-lab get pods -n monitoring` - Check observability stack
 - `./kubectl-lab get nodes` - Verify k3d cluster is running
+- `./kubectl-lab logs -n frontend -l app=nginx-hello-world` - View application logs
+- `./kubectl-lab port-forward -n frontend svc/nginx-hello-world 8080:80` - Access services locally
 
 ## Configuration Files
 - `*-values.yaml`: Helm chart configurations
 - `*.yaml` in k8s/: Kubernetes manifests
+- `*-configmap.yaml`: ConfigMaps for application configurations (logging, etc.)
 - Use specific namespaces for organization (monitoring, frontend, etc.)
 
 ## Architecture Decisions
 - Alloy: Uses loki.source.kubernetes (API-based) instead of loki.source.file (filesystem-based)
 - Security: Non-root containers when possible
 - Networking: Services communicate via cluster DNS
+- Logging: Structured JSON logs with comprehensive field coverage
+- Monitoring: Prometheus for metrics, Loki for logs, Grafana for visualization
+
+## Tiltfile Management
+- ConfigMaps must be added to Tiltfile before their dependent deployments
+- Use `helm_resource` for complex charts, `k8s_yaml` for simple manifests
