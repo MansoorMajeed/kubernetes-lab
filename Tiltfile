@@ -1,34 +1,43 @@
 # Observability setup
-helm_repo(name='prometheus-community', url='https://prometheus-community.github.io/helm-charts')
-helm_repo(name='grafana', url='https://grafana.github.io/helm-charts')
+load('ext://helm_resource', 'helm_resource', 'helm_repo')
 
-helm_chart(
-    name='prometheus',
-    chart='prometheus-community/prometheus',
+
+k8s_yaml('k8s/observability/namespace.yaml') # Create the monitoring namespace
+
+helm_repo('prometheus-community', 'https://prometheus-community.github.io/helm-charts')
+helm_repo('grafana', 'https://grafana.github.io/helm-charts')
+
+# Define the charts to install using helm_resource
+helm_resource(
+    'prometheus', # Release name
+    'prometheus-community/prometheus', # Chart path (repo/chart)
     namespace='monitoring',
-    create_namespace=True,
-    values='k8s/observability/prometheus-values.yaml'
+    resource_deps=['prometheus-community'], # Dependency on the helm_repo resource
+    flags='--values k8s/observability/prometheus-values.yaml'
 )
 
-helm_chart(
-    name='loki',
-    chart='grafana/loki',
+helm_resource(
+    'loki', # Release name
+    'grafana/loki', # Chart path (repo/chart)
     namespace='monitoring',
-    values='k8s/observability/loki-values.yaml'
+    resource_deps=['grafana'],
+    flags='--values k8s/observability/loki-values.yaml'
 )
 
-helm_chart(
-    name='grafana',
-    chart='grafana/grafana',
+helm_resource(
+    'grafana-release', # Release name
+    'grafana/grafana', # Chart path (repo/chart)
     namespace='monitoring',
-    values='k8s/observability/grafana-values.yaml'
+    resource_deps=['grafana'],
+    flags='--values k8s/observability/grafana-values.yaml'
 )
 
 k8s_yaml('k8s/observability/ingress.yaml')
 
-### Observability setup complete ###
+### Observability setup complete
 
 # Demo Nginx deploy and service
+
 k8s_yaml('k8s/apps/nginx-hello-world/deploy.yaml')
 k8s_yaml('k8s/apps/nginx-hello-world/service.yaml')
 k8s_yaml('k8s/apps/nginx-hello-world/ingress.yaml')

@@ -10,6 +10,7 @@ A full local Kubernetes setup with monitoring, logging and demo apps - Using k3d
 3. [Install k3d](https://k3d.io/stable/#installation)
 4. [Install kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 5. [Install Tilt](https://docs.tilt.dev/)
+6. [Install Helm](https://github.com/helm/helm/releases)
 
 
 ## Setup
