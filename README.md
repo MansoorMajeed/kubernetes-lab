@@ -65,3 +65,13 @@ Based on the hosts entry you have added, you can access them like this
 Access at grafana.kubelab.lan:8081
 Username: admin
 Password: password or whatever you set in the grafana-values.yaml
+
+
+## What is included
+
+### Monitoring and Logging
+
+1. Prometheus
+2. Grafana
+3. Loki
+4. Grafana Alloy
