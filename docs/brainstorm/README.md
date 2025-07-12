@@ -25,116 +25,115 @@ I have used several LLMs in some brainstorming sessions to design a realistic mi
 
 ### Service Breakdown
 
-| Service | Technology | Responsibility |
-|---------|------------|---------------|
-| **Product Catalog** | Go | Products, categories, search, inventory management |
-| **Shopping Cart** | Python | Cart sessions, item management, persistence |
-| **Order Service** | Go | Checkout process, order lifecycle, status tracking |
-| **User Service** | Python | Authentication, profiles, JWT tokens |
-| **Review Service** | Go | Product reviews, ratings, moderation |
-| **Frontend** | React/TypeScript | Web interface, responsive design |
+| Service | Technology | Communication | Database | Responsibility |
+|---------|------------|---------------|----------|---------------|
+| **Product Catalog** | Go | HTTP/REST | PostgreSQL | Products, categories, search, inventory |
+| **Shopping Cart** | Python/FastAPI | HTTP/REST | Redis | Cart sessions, item management |
+| **Order Service** | Java/Spring Boot | gRPC | PostgreSQL | Checkout process, order lifecycle |
+| **User Service** | Node.js/TypeScript | gRPC | MongoDB | Authentication, profiles, JWT tokens |
+| **Frontend** | React/TypeScript | HTTP/REST | - | Web interface, responsive design |
 
 ### Data Layer
-- **PostgreSQL**: Primary database for all persistent data
+- **PostgreSQL**: Products, orders, structured transactional data
+- **MongoDB**: User profiles, flexible document storage
 - **Redis**: Session storage, cart persistence, caching layer
 
 ### Why This Tech Stack?
-- **Go**: High performance for order processing and product catalog
-- **Python**: Great for data processing and user management
+- **Go**: High performance, excellent observability tooling
+- **Python/FastAPI**: Async capabilities, great for rapid development
+- **Java/Spring Boot**: Enterprise patterns, rich metrics/monitoring
+- **Node.js/TypeScript**: Event-driven architecture, different runtime characteristics
 - **React**: Modern frontend with component reusability
-- **PostgreSQL**: ACID compliance for financial transactions
+- **PostgreSQL**: ACID compliance, structured data
+- **MongoDB**: Document storage, flexible schemas
 - **Redis**: Fast session management and caching
+
+### Communication Patterns
+- **HTTP/REST**: Public APIs, frontend communication
+- **gRPC**: Internal service communication (Order ↔ User services)
+- **Mixed approach**: Real-world scenarios where both protocols coexist
 
 ## 📋 Implementation Roadmap
 
-### Phase 1: Foundation (MVP)
-**Goal**: Basic working e-commerce store
+### Phase 1: Foundation (2 Languages)
+**Goal**: Basic services with observability
 
 **Services to Build:**
 - [ ] Product Catalog Service (Go)
   - CRUD operations for products
-  - Basic category support
-  - Simple search functionality
-- [ ] Shopping Cart Service (Python)
+  - HTTP/REST API
+  - PostgreSQL integration
+  - Structured JSON logging
+- [ ] Shopping Cart Service (Python/FastAPI)
   - Session-based cart management
-  - Add/remove/update items
-  - Calculate totals
+  - HTTP/REST API
+  - Redis persistence
+  - Structured JSON logging
 - [ ] Frontend (React)
   - Product listing page
-  - Product detail page
   - Shopping cart UI
-  - Basic checkout form
+  - HTTP calls to backend services
 
-**Database Schema:**
-```sql
--- Products table
--- Categories table
--- Cart sessions table
-```
+**Infrastructure:**
+- [ ] PostgreSQL database
+- [ ] Redis cache
+- [ ] Basic observability (logs, metrics)
 
 **Success Criteria:**
-- Can browse products
-- Can add items to cart
-- Can see cart total
-- Can complete basic checkout
+- 2 backend services running and communicating
+- Basic product browsing and cart functionality
+- Structured logging across all services
+- Prometheus metrics collection
 
-### Phase 2: User Management
-**Goal**: User accounts and order tracking
+### Phase 2: Add gRPC + More Languages (4 Total)
+**Goal**: Mixed communication patterns and more diverse runtime characteristics
 
-**Services to Build:**
-- [ ] User Service (Python)
-  - User registration/login
-  - JWT authentication
-  - Profile management
-- [ ] Order Service (Go)
-  - Convert cart to order
-  - Order status tracking
-  - Order history
+**New Services:**
+- [ ] Order Service (Java/Spring Boot)
+  - gRPC API for internal communication
+  - PostgreSQL for order data
+  - JVM metrics and monitoring
+- [ ] User Service (Node.js/TypeScript)
+  - gRPC API for internal communication
+  - MongoDB for user profiles
+  - Event-loop monitoring
 
-**New Features:**
-- User accounts and authentication
-- Persistent cart across sessions
-- Order history and tracking
-- User profile management
+**Communication Patterns:**
+- [ ] Frontend → Backend: HTTP/REST
+- [ ] Order Service ↔ User Service: gRPC
+- [ ] Mixed protocol monitoring
 
-### Phase 3: Social Features
-**Goal**: Reviews and ratings
+**New Infrastructure:**
+- [ ] MongoDB database
+- [ ] gRPC service discovery
+- [ ] Multi-language observability
 
-**Services to Build:**
-- [ ] Review Service (Go)
-  - Product reviews and ratings
-  - Review moderation
-  - Aggregate ratings
+### Phase 3: Advanced Observability
+**Goal**: Production-ready monitoring and alerting
 
-**New Features:**
-- Product reviews and ratings
-- Review aggregation
-- User review history
+**Observability Features:**
+- [ ] Distributed tracing (HTTP + gRPC)
+- [ ] SLI/SLO monitoring
+- [ ] Custom dashboards per service
+- [ ] Alerting rules
+- [ ] Performance profiling
 
-### Phase 4: Advanced E-commerce
-**Goal**: Real-world features
+**Monitoring Patterns:**
+- [ ] JVM metrics (Java service)
+- [ ] Event loop metrics (Node.js service)
+- [ ] Go runtime metrics
+- [ ] Python async metrics
+- [ ] Database performance metrics
 
-**Enhancements:**
-- [ ] Advanced search and filtering
-- [ ] Inventory management
-- [ ] Product recommendations
-- [ ] Discount codes and promotions
-- [ ] Multi-category navigation
-- [ ] Wishlist functionality
+### Phase 4: Operational Excellence
+**Goal**: Real-world SRE practices
 
-### Phase 5: Observability & Reliability
-**Goal**: Production-ready monitoring
-
-**Observability:**
-- [ ] Comprehensive logging for purchase funnels
-- [ ] Metrics for conversion rates
-- [ ] Performance monitoring
-- [ ] Error tracking and alerting
-- [ ] Distributed tracing across services
-
-**Reliability:**
-- [ ] Graceful degradation
-- [ ] Load testing
+**SRE Features:**
+- [ ] Runbook automation
+- [ ] Incident response procedures
+- [ ] Load testing and capacity planning
+- [ ] Graceful degradation patterns
+- [ ] Health check endpoints
 
 ## 🎯 Learning Objectives
 
