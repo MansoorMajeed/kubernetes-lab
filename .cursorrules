@@ -1,0 +1,48 @@
+# Kubernetes Lab Project Context
+
+## Purpose
+- **Learning environment** for Kubernetes, observability, and cloud-native technologies
+- **Self-contained setup** - everything runs locally with k3d
+- **Experimentation friendly** - safe to try different approaches and configurations
+- **Educational focus** - explain concepts and trade-offs, not just solutions
+
+## Project Structure
+- `k8s/apps/`: Application deployments (nginx-hello-world, etc.)
+- `k8s/observability/`: Monitoring stack (Prometheus, Loki, Grafana, Alloy)
+- `./kubectl-lab`: Wrapper script for kubectl commands against local k3d cluster
+- `./start-lab.sh`: Script to start the k3d environment
+- `Tiltfile`: Tilt configuration for local development
+
+## Technology Stack
+- **Kubernetes**: k3d (Docker-based local cluster)
+- **Monitoring**: Prometheus + Loki + Grafana + Alloy
+- **Package Manager**: Helm charts
+- **Local Development**: Tilt
+
+## Key Patterns
+- Use `./kubectl-lab` instead of direct kubectl for cluster operations
+- Observability stack deployed in `monitoring` namespace
+- Alloy uses Kubernetes API approach (not filesystem) for log collection
+- Regular deployments preferred over DaemonSets when possible
+- Services exposed via port-forwarding for local access
+
+## ⚠️ SAFETY WARNINGS
+- **ALWAYS use `./kubectl-lab`** - never use raw `kubectl` commands (protects against wrong context)
+- **ALWAYS use `./tilt-lab`** -- which is preconfigured with appropriate kubeconfig
+- **Production protection**: This setup is LOCAL ONLY - never apply these configs to production clusters
+- **Context isolation**: Ensure k3d context is active before any cluster operations
+
+## Common Commands
+- `./start-lab.sh` - Start the k3d environment
+- `./kubectl-lab get pods -n monitoring` - Check observability stack
+- `./kubectl-lab get nodes` - Verify k3d cluster is running
+
+## Configuration Files
+- `*-values.yaml`: Helm chart configurations
+- `*.yaml` in k8s/: Kubernetes manifests
+- Use specific namespaces for organization (monitoring, frontend, etc.)
+
+## Architecture Decisions
+- Alloy: Uses loki.source.kubernetes (API-based) instead of loki.source.file (filesystem-based)
+- Security: Non-root containers when possible
+- Networking: Services communicate via cluster DNS
