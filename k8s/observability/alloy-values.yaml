@@ -1,0 +1,101 @@
+# Simplified Alloy configuration using built-in log mounting
+alloy:
+  configMap:
+    content: |
+      // Discover Kubernetes pods for log collection
+      discovery.kubernetes "pods" {
+        role = "pod"
+      }
+
+      // Filter and relabel discovered pods
+      discovery.relabel "pods" {
+        targets = discovery.kubernetes.pods.targets
+        
+        // Only keep running pods
+        rule {
+          source_labels = ["__meta_kubernetes_pod_phase"]
+          action        = "keep"
+          regex         = "Running"
+        }
+        
+        // Skip certain system pods to reduce noise
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          action        = "drop"
+          regex         = "(coredns|local-path-provisioner|metrics-server|traefik|helm-install).*"
+        }
+        
+        // Extract namespace label
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label  = "namespace"
+        }
+        
+        // Extract pod name
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label  = "pod"
+        }
+        
+        // Extract container name
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label  = "container"
+        }
+        
+        // Extract app label if it exists
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app"]
+          target_label  = "app"
+        }
+        
+        // Create log file path - FIXED with proper regex and replacement syntax
+        rule {
+          source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name", "__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+          target_label  = "__path__"
+          regex         = "([^;]+);([^;]+);([^;]+);([^;]+)"
+          replacement   = "/var/log/pods/$1_$2_$3/$4/0.log"
+        }
+      }
+
+      // Read logs from files
+      loki.source.file "pods" {
+        targets    = discovery.relabel.pods.output
+        forward_to = [loki.write.default.receiver]
+      }
+
+      // Send logs to Loki
+      loki.write "default" {
+        endpoint {
+          url = "http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
+        }
+      }
+
+  # Use built-in log mounting
+  mounts:
+    varlog: true
+
+# Deploy as DaemonSet to access logs on all nodes
+controller:
+  type: "daemonset"
+
+# Service account and RBAC
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+
+# Resource limits
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Security context
+securityContext:
+  privileged: false
+  runAsUser: 0  # Need root to read log files
