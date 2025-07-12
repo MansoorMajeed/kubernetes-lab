@@ -49,17 +49,10 @@ alloy:
           target_label  = "app"
         }
         
-        // Create log file path with correct k3d/containerd format
-        rule {
-          source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name", "__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
-          target_label  = "__path__"
-          regex         = "([^;]+);([^;]+);([^;]+);([^;]+)"
-          replacement   = "/var/log/pods/$1_$2_$3/$4/0.log"
-        }
       }
 
-      // Read logs from files
-      loki.source.file "pods" {
+      // Read logs via Kubernetes API (no filesystem paths needed!)
+      loki.source.kubernetes "pods" {
         targets    = discovery.relabel.pods.output
         forward_to = [loki.write.default.receiver]
       }
@@ -71,13 +64,13 @@ alloy:
         }
       }
 
-  # Use built-in log mounting
+  # No filesystem mounting needed for Kubernetes API access
   mounts:
-    varlog: true
+    varlog: false
 
-# Deploy as DaemonSet to access logs on all nodes
+# Deploy as regular deployment (no filesystem access needed)
 controller:
-  type: "daemonset"
+  type: "deployment"
 
 # Service account and RBAC
 serviceAccount:
@@ -98,4 +91,4 @@ resources:
 # Security context
 securityContext:
   privileged: false
-  runAsUser: 0  # Need root to read log files
+  runAsUser: 65534  # Run as non-root user (nobody)
