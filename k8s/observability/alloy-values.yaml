@@ -49,7 +49,7 @@ alloy:
           target_label  = "app"
         }
         
-        // Create log file path - FIXED with proper regex and replacement syntax
+        // Create log file path with correct k3d/containerd format
         rule {
           source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name", "__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
           target_label  = "__path__"

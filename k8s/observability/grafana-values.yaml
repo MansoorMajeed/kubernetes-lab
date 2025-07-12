@@ -6,12 +6,12 @@ datasources:
   datasources.yaml:
     apiVersion: 1
     datasources:
-      - name: Prometheus
+      - name: DS_PROMETHEUS
         type: prometheus
         url: http://prometheus-server.monitoring.svc.cluster.local # K8s DNS name for the Prometheus service
         access: proxy
         isDefault: true
-      - name: Loki
+      - name: DS_LOKI
         type: loki
         url: http://loki.monitoring.svc.cluster.local:3100 # K8s DNS name for the Loki service
         access: proxy
@@ -43,7 +43,4 @@ dashboards: # we can also load dashboards from URLs
   grafana-dashboards-kubernetes:
     k8s-views-pods:
         url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-pods.json
-        token: ''
-    loki-overview:
-        url: https://grafana.com/api/dashboards/13186/revisions/1/download
         token: ''
