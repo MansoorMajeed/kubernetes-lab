@@ -16,8 +16,31 @@ datasources:
         url: http://loki-stack.monitoring.svc.cluster.local:3100 # K8s DNS name for the Loki service
         access: proxy
 
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+    - name: 'grafana-dashboards-kubernetes'
+      orgId: 1
+      folder: 'Kubernetes'
+      type: file
+      disableDeletion: true
+      editable: true
+      options:
+        path: /var/lib/grafana/dashboards/grafana-dashboards-kubernetes
 # Automatically discover and load dashboards from ConfigMaps
 sidecar:
   dashboards:
     enabled: true
     label: grafana_dashboard # Tell the sidecar to look for ConfigMaps with this label
+    defaultFolderName: "General"
+    labelValue: "1"
+    folderAnnotation: grafana_folder
+    searchNamespace: ALL
+    provider:
+      foldersFromFilesStructure: true
+dashboards: # we can also load dashboards from URLs
+  grafana-dashboards-kubernetes:
+    k8s-views-pods:
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-pods.json
+        token: ''
