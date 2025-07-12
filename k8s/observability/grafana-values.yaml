@@ -1,0 +1,23 @@
+# Set a simple admin password
+adminPassword: "password"
+
+# Pre-configure the Prometheus and Loki data sources
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-server.monitoring.svc.cluster.local # K8s DNS name for the Prometheus service
+        access: proxy
+        isDefault: true
+      - name: Loki
+        type: loki
+        url: http://loki-stack.monitoring.svc.cluster.local:3100 # K8s DNS name for the Loki service
+        access: proxy
+
+# Automatically discover and load dashboards from ConfigMaps
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard # Tell the sidecar to look for ConfigMaps with this label

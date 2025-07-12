@@ -1,0 +1,16 @@
+# disable alertmanager and pushgateway for local stuff
+alertmanager:
+  enabled: false
+pushgateway:
+  enabled: false
+
+# tell Prometheus server to look for
+# ServiceMonitors or PodMonitors to discover what to scrape.
+# We will enable scraping pods that have the label 'app.kubernetes.io/name'.
+prometheus:
+  prometheusSpec:
+    retention: 14d  
+    retentionSize: "2Gi" # Set the retention size to 2GB
+    podMonitorSelector:
+      matchLabels:
+        monitoring.kubelab.lan/scrape: "true" # This must match the labels in our workloads

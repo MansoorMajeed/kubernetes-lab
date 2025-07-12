@@ -4,6 +4,7 @@ metadata:
   name: nginx-hello-world
   labels:
     app: nginx-hello-world
+    monitoring.kubelab.lan/scrape: "true" # Enable scraping for this deployment
 spec:
   replicas: 1
   selector:
