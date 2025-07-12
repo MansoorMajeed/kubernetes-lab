@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Tilt wrapper for kubernetes-lab environment
+LAB_KUBECONFIG="$HOME/.kube/config-kubernetes-lab"
+
+if [ ! -f "$LAB_KUBECONFIG" ]; then
+    echo "Error: Lab kubeconfig not found at $LAB_KUBECONFIG"
+    echo "Please run ./start-lab.sh first to set up the lab environment."
+    exit 1
+fi
+
+# Export the kubeconfig for tilt to use
+export KUBECONFIG="$LAB_KUBECONFIG"
+
+# Run tilt with the lab kubeconfig
+tilt "$@" 

@@ -42,6 +42,15 @@ After the initial setup, you can use `tilt up` or `tilt down`
 
 ## Access
 
+## Using Kubectl
+
+There is a helper script included `./kubectl-lab` that helps to make sure that we are using the
+appropriate Kubernetes context at all times. This is completely optional if you know what you are doing
+
+```bash
+./kubectl-lab get all
+```
+
 ### Tilt UI
 
 You can access the Tilt UI [HERE](http://localhost:10350/)

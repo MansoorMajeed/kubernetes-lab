@@ -1,4 +1,10 @@
+# Restrict Tilt to only use the k3d lab context for safety
+allow_k8s_contexts('k3d-kubernetes-lab')
 
+# Print helpful message about using the correct kubeconfig
+print("📋 Make sure you're using the lab kubeconfig:")
+print("   export KUBECONFIG=~/.kube/config-kubernetes-lab")
+print("   OR use: ./tilt-lab up")
 
 k8s_yaml('k8s/observability/namespace.yaml') # Create the monitoring namespace
 k8s_yaml('k8s/apps/nginx-hello-world/namespace.yaml') # Create the monitoring namespace
