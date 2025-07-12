@@ -5,7 +5,7 @@ k8s_yaml('k8s/observability/namespace.yaml') # Create the monitoring namespace
 # Observability setup
 load('ext://helm_resource', 'helm_resource', 'helm_repo')
 helm_repo('prometheus-community', 'https://prometheus-community.github.io/helm-charts')
-helm_repo('grafana', 'https://grafana.github.io/helm-charts')
+helm_repo('grafana-repo', 'https://grafana.github.io/helm-charts')
 
 # Define the charts to install using helm_resource
 helm_resource(
@@ -25,10 +25,10 @@ helm_resource(
 )
 
 helm_resource(
-    'grafana-release', # Release name
+    'grafana', # Release name
     'grafana/grafana', # Chart path (repo/chart)
     namespace='monitoring',
-    resource_deps=['grafana'],
+    resource_deps=['grafana-repo'],
     flags=['--values', 'k8s/observability/grafana-values.yaml']
 )
 

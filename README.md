@@ -20,7 +20,10 @@ A full local Kubernetes setup with monitoring, logging and demo apps - Using k3d
 ```text
 127.0.0.1 nginx-hello.kubelab.lan
 127.0.0.1 argus-mcp.kubelab.lan
-127.0.0.1 prometheus.kubelab.lan
+
+127.0.0.1  grafana.kubelab.lan
+127.0.0.1  prometheus.kubelab.lan
+
 ```
 
 * **On macOS/Linux:** Edit `/etc/hosts` (e.g., `sudo nano /etc/hosts`).
@@ -52,3 +55,13 @@ Based on the hosts entry you have added, you can access them like this
 
 > Note: The port number 8081 comes from the fact that we set it up to use port 8081
 > during k3d installation. Check the script `start-lab.sh`
+
+
+
+
+
+### Grafana
+
+Access at grafana.kubelab.lan:8081
+Username: admin
+Password: password or whatever you set in the grafana-values.yaml
