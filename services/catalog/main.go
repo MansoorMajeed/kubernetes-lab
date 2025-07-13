@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	// Initialize database connection
+	// Get database connection
 	database, err := db.Connect()
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -21,21 +21,18 @@ func main() {
 		log.Fatalf("Failed to initialize database schema: %v", err)
 	}
 
-	// Create server with database
-	srv := server.New(database)
+	// Create server with the underlying sql.DB
+	srv := server.NewServer(database.DB)
+
+	// Get port from environment or use default
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
 	// Start server
-	port := getEnv("PORT", "8080")
 	log.Printf("Starting catalog service on port %s", port)
-
-	if err := srv.Start(":" + port); err != nil {
+	if err := srv.Start(port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
-}
-
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
 }

@@ -1,86 +1,86 @@
 package server
 
 import (
-	"context"
+	"database/sql"
 	"log"
-	"net/http"
-	"time"
 
-	"catalog-service/internal/db"
 	"catalog-service/internal/handlers"
+	"catalog-service/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
 
+// Server represents the HTTP server
 type Server struct {
 	router *gin.Engine
-	server *http.Server
-	db     *db.Database
+	db     *sql.DB
 }
 
-func New(database *db.Database) *Server {
-	// Set gin to release mode for production
+// NewServer creates a new server instance
+func NewServer(database *sql.DB) *Server {
+	// Set Gin to release mode for production
 	gin.SetMode(gin.ReleaseMode)
 
-	router := gin.New()
+	router := gin.Default()
 
-	// Add basic middleware
-	router.Use(gin.Recovery())
-	router.Use(LoggingMiddleware())
-
-	// Create server instance
-	s := &Server{
+	server := &Server{
 		router: router,
 		db:     database,
 	}
 
 	// Setup routes
-	s.setupRoutes()
+	server.setupRoutes()
 
-	return s
+	return server
 }
 
+// setupRoutes configures all the routes for the server
 func (s *Server) setupRoutes() {
-	// Health check endpoint with database
-	s.router.GET("/health", handlers.HealthCheckWithDB(s.db))
+	// Health check endpoint
+	healthHandler := handlers.NewHealthHandler(s.db)
+	s.router.GET("/health", healthHandler.HealthCheck)
+
+	// Create product service and handler
+	productService := models.NewProductService(s.db)
+	productHandler := handlers.NewProductHandler(productService)
 
 	// API v1 routes
 	v1 := s.router.Group("/api/v1")
 	{
-		// Products routes will go here
-		_ = v1 // avoid unused variable warning for now
+		// Product routes
+		products := v1.Group("/products")
+		{
+			products.GET("", productHandler.GetProducts)          // GET /api/v1/products
+			products.POST("", productHandler.CreateProduct)       // POST /api/v1/products
+			products.GET("/:id", productHandler.GetProduct)       // GET /api/v1/products/:id
+			products.PUT("/:id", productHandler.UpdateProduct)    // PUT /api/v1/products/:id
+			products.DELETE("/:id", productHandler.DeleteProduct) // DELETE /api/v1/products/:id
+		}
+	}
+
+	// Log all registered routes
+	log.Println("Registered routes:")
+	for _, route := range s.router.Routes() {
+		log.Printf("  %s %s", route.Method, route.Path)
 	}
 }
 
-func (s *Server) Start(addr string) error {
-	s.server = &http.Server{
-		Addr:         addr,
-		Handler:      s.router,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-	}
-
-	return s.server.ListenAndServe()
+// Start starts the HTTP server
+func (s *Server) Start(port string) error {
+	log.Printf("Starting server on port %s", port)
+	return s.router.Run(":" + port)
 }
 
-func (s *Server) Shutdown(ctx context.Context) error {
-	if s.server != nil {
-		return s.server.Shutdown(ctx)
+// Stop gracefully stops the server
+func (s *Server) Stop() error {
+	if s.db != nil {
+		log.Println("Closing database connection...")
+		return s.db.Close()
 	}
 	return nil
 }
 
-// LoggingMiddleware provides basic request logging
-func LoggingMiddleware() gin.HandlerFunc {
-	return gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		// Simple structured log format for now
-		log.Printf(`{"method":"%s","path":"%s","status":%d,"latency":"%v","ip":"%s"}`,
-			param.Method,
-			param.Path,
-			param.StatusCode,
-			param.Latency,
-			param.ClientIP,
-		)
-		return ""
-	})
+// GetDB returns the database connection (for testing purposes)
+func (s *Server) GetDB() *sql.DB {
+	return s.db
 }

@@ -1,60 +1,42 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
-	"time"
-
-	"catalog-service/internal/db"
 
 	"github.com/gin-gonic/gin"
 )
 
-// HealthResponse represents the health check response
-type HealthResponse struct {
-	Status    string            `json:"status"`
-	Service   string            `json:"service"`
-	Timestamp time.Time         `json:"timestamp"`
-	Version   string            `json:"version"`
-	Checks    map[string]string `json:"checks"`
+// HealthHandler handles health check requests
+type HealthHandler struct {
+	db *sql.DB
 }
 
-// HealthCheck handles GET /health requests (simple version)
-func HealthCheck(c *gin.Context) {
-	response := HealthResponse{
-		Status:    "healthy",
-		Service:   "catalog",
-		Timestamp: time.Now(),
-		Version:   "1.0.0",
-		Checks:    map[string]string{},
+// NewHealthHandler creates a new health handler
+func NewHealthHandler(db *sql.DB) *HealthHandler {
+	return &HealthHandler{
+		db: db,
 	}
-
-	c.JSON(http.StatusOK, response)
 }
 
-// HealthCheckWithDB handles GET /health requests with database connectivity check
-func HealthCheckWithDB(database *db.Database) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		checks := make(map[string]string)
-		status := "healthy"
-		httpStatus := http.StatusOK
-
-		// Check database connectivity
-		if err := database.HealthCheck(); err != nil {
-			checks["database"] = "unhealthy: " + err.Error()
-			status = "unhealthy"
-			httpStatus = http.StatusServiceUnavailable
-		} else {
-			checks["database"] = "healthy"
+// HealthCheck handles GET /health
+func (h *HealthHandler) HealthCheck(c *gin.Context) {
+	// Check database connection
+	if h.db != nil {
+		err := h.db.Ping()
+		if err != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"status":   "unhealthy",
+				"database": "disconnected",
+				"error":    err.Error(),
+			})
+			return
 		}
-
-		response := HealthResponse{
-			Status:    status,
-			Service:   "catalog",
-			Timestamp: time.Now(),
-			Version:   "1.0.0",
-			Checks:    checks,
-		}
-
-		c.JSON(httpStatus, response)
 	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":   "healthy",
+		"database": "connected",
+		"service":  "catalog-service",
+	})
 }
