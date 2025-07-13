@@ -4,9 +4,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"catalog-service/internal/logger"
 	"catalog-service/internal/models"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 // ProductHandler handles product-related HTTP requests
@@ -39,6 +41,13 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 	// Get products from database
 	products, err := h.productService.GetAllProducts(offset, limit)
 	if err != nil {
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "handler",
+			"action":    "get_products",
+			"page":      page,
+			"limit":     limit,
+		}).Error("Failed to retrieve products")
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve products",
 		})
@@ -50,6 +59,14 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 	for _, product := range products {
 		responses = append(responses, product.ToResponse())
 	}
+
+	logger.WithFields(logrus.Fields{
+		"component": "handler",
+		"action":    "get_products",
+		"page":      page,
+		"limit":     limit,
+		"count":     len(responses),
+	}).Info("Retrieved products")
 
 	c.JSON(http.StatusOK, gin.H{
 		"products": responses,
@@ -65,6 +82,12 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "handler",
+			"action":    "get_product",
+			"id_param":  idStr,
+		}).Error("Invalid product ID")
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid product ID",
 		})
@@ -75,11 +98,24 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 	product, err := h.productService.GetProduct(id)
 	if err != nil {
 		if err.Error() == "product not found" {
+			logger.WithFields(logrus.Fields{
+				"component":  "handler",
+				"action":     "get_product",
+				"product_id": id,
+			}).Warn("Product not found")
+
 			c.JSON(http.StatusNotFound, gin.H{
 				"error": "Product not found",
 			})
 			return
 		}
+
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component":  "handler",
+			"action":     "get_product",
+			"product_id": id,
+		}).Error("Failed to retrieve product")
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve product",
 		})
@@ -95,6 +131,11 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 
 	// Bind and validate request
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "handler",
+			"action":    "create_product",
+		}).Error("Invalid request data")
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Invalid request data",
 			"details": err.Error(),
@@ -105,11 +146,26 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	// Create product in database
 	product, err := h.productService.CreateProduct(req)
 	if err != nil {
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "handler",
+			"action":    "create_product",
+			"name":      req.Name,
+			"price":     req.Price,
+		}).Error("Failed to create product")
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to create product",
 		})
 		return
 	}
+
+	logger.WithFields(logrus.Fields{
+		"component":  "handler",
+		"action":     "create_product",
+		"product_id": product.ID,
+		"name":       product.Name,
+		"price":      product.Price,
+	}).Info("Product created successfully")
 
 	c.JSON(http.StatusCreated, product.ToResponse())
 }
@@ -120,6 +176,12 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "handler",
+			"action":    "update_product",
+			"id_param":  idStr,
+		}).Error("Invalid product ID")
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid product ID",
 		})
@@ -130,6 +192,12 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 
 	// Bind and validate request
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component":  "handler",
+			"action":     "update_product",
+			"product_id": id,
+		}).Error("Invalid request data")
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Invalid request data",
 			"details": err.Error(),
@@ -141,16 +209,37 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	product, err := h.productService.UpdateProduct(id, req)
 	if err != nil {
 		if err.Error() == "product not found" {
+			logger.WithFields(logrus.Fields{
+				"component":  "handler",
+				"action":     "update_product",
+				"product_id": id,
+			}).Warn("Product not found")
+
 			c.JSON(http.StatusNotFound, gin.H{
 				"error": "Product not found",
 			})
 			return
 		}
+
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component":  "handler",
+			"action":     "update_product",
+			"product_id": id,
+		}).Error("Failed to update product")
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to update product",
 		})
 		return
 	}
+
+	logger.WithFields(logrus.Fields{
+		"component":  "handler",
+		"action":     "update_product",
+		"product_id": product.ID,
+		"name":       product.Name,
+		"price":      product.Price,
+	}).Info("Product updated successfully")
 
 	c.JSON(http.StatusOK, product.ToResponse())
 }
@@ -161,6 +250,12 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "handler",
+			"action":    "delete_product",
+			"id_param":  idStr,
+		}).Error("Invalid product ID")
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid product ID",
 		})
@@ -171,16 +266,35 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 	err = h.productService.DeleteProduct(id)
 	if err != nil {
 		if err.Error() == "product not found" {
+			logger.WithFields(logrus.Fields{
+				"component":  "handler",
+				"action":     "delete_product",
+				"product_id": id,
+			}).Warn("Product not found")
+
 			c.JSON(http.StatusNotFound, gin.H{
 				"error": "Product not found",
 			})
 			return
 		}
+
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component":  "handler",
+			"action":     "delete_product",
+			"product_id": id,
+		}).Error("Failed to delete product")
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to delete product",
 		})
 		return
 	}
+
+	logger.WithFields(logrus.Fields{
+		"component":  "handler",
+		"action":     "delete_product",
+		"product_id": id,
+	}).Info("Product deleted successfully")
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Product deleted successfully",

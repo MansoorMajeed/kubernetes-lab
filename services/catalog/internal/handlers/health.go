@@ -4,7 +4,10 @@ import (
 	"database/sql"
 	"net/http"
 
+	"catalog-service/internal/logger"
+
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 // HealthHandler handles health check requests
@@ -25,6 +28,12 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 	if h.db != nil {
 		err := h.db.Ping()
 		if err != nil {
+			logger.WithError(err).WithFields(logrus.Fields{
+				"component": "health",
+				"action":    "check",
+				"database":  "disconnected",
+			}).Error("Database health check failed")
+
 			c.JSON(http.StatusServiceUnavailable, gin.H{
 				"status":   "unhealthy",
 				"database": "disconnected",
@@ -33,6 +42,13 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 			return
 		}
 	}
+
+	logger.WithFields(logrus.Fields{
+		"component": "health",
+		"action":    "check",
+		"status":    "healthy",
+		"database":  "connected",
+	}).Info("Health check successful")
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":   "healthy",

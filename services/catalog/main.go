@@ -1,24 +1,32 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"catalog-service/internal/db"
+	"catalog-service/internal/logger"
 	"catalog-service/internal/server"
+
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
 	// Get database connection
 	database, err := db.Connect()
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "database",
+			"action":    "connect",
+		}).Fatal("Failed to connect to database")
 	}
 	defer database.Close()
 
 	// Initialize database schema
 	if err := database.InitSchema(); err != nil {
-		log.Fatalf("Failed to initialize database schema: %v", err)
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "database",
+			"action":    "schema_init",
+		}).Fatal("Failed to initialize database schema")
 	}
 
 	// Create server with the underlying sql.DB
@@ -31,8 +39,17 @@ func main() {
 	}
 
 	// Start server
-	log.Printf("Starting catalog service on port %s", port)
+	logger.WithFields(logrus.Fields{
+		"component": "server",
+		"action":    "start",
+		"port":      port,
+	}).Info("Starting catalog service")
+
 	if err := srv.Start(port); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "server",
+			"action":    "start",
+			"port":      port,
+		}).Fatal("Failed to start server")
 	}
 }

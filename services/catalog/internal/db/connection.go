@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
+	"catalog-service/internal/logger"
+
 	_ "github.com/lib/pq"
+	"github.com/sirupsen/logrus"
 )
 
 type Database struct {
@@ -29,7 +31,14 @@ func Connect() (*Database, error) {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		host, port, user, password, dbname, sslmode)
 
-	log.Printf("Connecting to database at %s:%s", host, port)
+	logger.WithFields(logrus.Fields{
+		"component": "database",
+		"action":    "connect",
+		"host":      host,
+		"port":      port,
+		"database":  dbname,
+		"user":      user,
+	}).Info("Connecting to database")
 
 	// Open database connection
 	db, err := sql.Open("postgres", connStr)
@@ -47,7 +56,13 @@ func Connect() (*Database, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	log.Printf("Successfully connected to database")
+	logger.WithFields(logrus.Fields{
+		"component": "database",
+		"action":    "connect",
+		"status":    "success",
+		"host":      host,
+		"port":      port,
+	}).Info("Successfully connected to database")
 
 	return &Database{DB: db}, nil
 }
@@ -91,7 +106,12 @@ func (d *Database) InitSchema() error {
 		return fmt.Errorf("failed to create products table: %w", err)
 	}
 
-	log.Printf("Database schema initialized")
+	logger.WithFields(logrus.Fields{
+		"component": "database",
+		"action":    "schema_init",
+		"status":    "success",
+	}).Info("Database schema initialized")
+
 	return nil
 }
 

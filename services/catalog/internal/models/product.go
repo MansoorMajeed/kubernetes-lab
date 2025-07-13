@@ -3,7 +3,10 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"log"
+
+	"catalog-service/internal/logger"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Product represents a product in the catalog
@@ -66,11 +69,23 @@ func (s *ProductService) CreateProduct(req ProductCreateRequest) (*Product, erro
 		&product.StockQty,
 	)
 	if err != nil {
-		log.Printf("Error creating product: %v", err)
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "product",
+			"action":    "create",
+			"name":      req.Name,
+			"price":     req.Price,
+		}).Error("Error creating product")
 		return nil, fmt.Errorf("failed to create product: %v", err)
 	}
 
-	log.Printf("Created product: %+v", product)
+	logger.WithFields(logrus.Fields{
+		"component":  "product",
+		"action":     "create",
+		"product_id": product.ID,
+		"name":       product.Name,
+		"price":      product.Price,
+	}).Info("Created product")
+
 	return &product, nil
 }
 
@@ -90,7 +105,11 @@ func (s *ProductService) GetProduct(id int) (*Product, error) {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("product not found")
 		}
-		log.Printf("Error getting product %d: %v", id, err)
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component":  "product",
+			"action":     "get",
+			"product_id": id,
+		}).Error("Error getting product")
 		return nil, fmt.Errorf("failed to get product: %v", err)
 	}
 
@@ -103,7 +122,12 @@ func (s *ProductService) GetAllProducts(offset, limit int) ([]Product, error) {
 
 	rows, err := s.db.Query(query, limit, offset)
 	if err != nil {
-		log.Printf("Error getting products: %v", err)
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "product",
+			"action":    "list",
+			"offset":    offset,
+			"limit":     limit,
+		}).Error("Error getting products")
 		return nil, fmt.Errorf("failed to get products: %v", err)
 	}
 	defer rows.Close()
@@ -119,14 +143,22 @@ func (s *ProductService) GetAllProducts(offset, limit int) ([]Product, error) {
 			&product.StockQty,
 		)
 		if err != nil {
-			log.Printf("Error scanning product row: %v", err)
+			logger.WithError(err).WithFields(logrus.Fields{
+				"component": "product",
+				"action":    "list",
+				"operation": "scan",
+			}).Error("Error scanning product row")
 			return nil, fmt.Errorf("failed to scan product: %v", err)
 		}
 		products = append(products, product)
 	}
 
 	if err = rows.Err(); err != nil {
-		log.Printf("Error iterating products: %v", err)
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "product",
+			"action":    "list",
+			"operation": "iterate",
+		}).Error("Error iterating products")
 		return nil, fmt.Errorf("failed to iterate products: %v", err)
 	}
 
@@ -171,11 +203,22 @@ func (s *ProductService) UpdateProduct(id int, req ProductUpdateRequest) (*Produ
 		&product.StockQty,
 	)
 	if err != nil {
-		log.Printf("Error updating product %d: %v", id, err)
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component":  "product",
+			"action":     "update",
+			"product_id": id,
+		}).Error("Error updating product")
 		return nil, fmt.Errorf("failed to update product: %v", err)
 	}
 
-	log.Printf("Updated product: %+v", product)
+	logger.WithFields(logrus.Fields{
+		"component":  "product",
+		"action":     "update",
+		"product_id": product.ID,
+		"name":       product.Name,
+		"price":      product.Price,
+	}).Info("Updated product")
+
 	return &product, nil
 }
 
@@ -185,13 +228,22 @@ func (s *ProductService) DeleteProduct(id int) error {
 
 	result, err := s.db.Exec(query, id)
 	if err != nil {
-		log.Printf("Error deleting product %d: %v", id, err)
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component":  "product",
+			"action":     "delete",
+			"product_id": id,
+		}).Error("Error deleting product")
 		return fmt.Errorf("failed to delete product: %v", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Printf("Error getting rows affected for product %d: %v", id, err)
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component":  "product",
+			"action":     "delete",
+			"product_id": id,
+			"operation":  "rows_affected",
+		}).Error("Error getting rows affected for product")
 		return fmt.Errorf("failed to get rows affected: %v", err)
 	}
 
@@ -199,7 +251,12 @@ func (s *ProductService) DeleteProduct(id int) error {
 		return fmt.Errorf("product not found")
 	}
 
-	log.Printf("Deleted product %d", id)
+	logger.WithFields(logrus.Fields{
+		"component":  "product",
+		"action":     "delete",
+		"product_id": id,
+	}).Info("Deleted product")
+
 	return nil
 }
 
