@@ -59,3 +59,23 @@ k8s_yaml('k8s/apps/nginx-hello-world/deploy.yaml')
 k8s_yaml('k8s/apps/nginx-hello-world/service.yaml')
 k8s_yaml('k8s/apps/nginx-hello-world/ingress.yaml')
 
+### Catalog Service Setup
+
+# Create catalog namespace
+k8s_yaml('k8s/apps/catalog/namespace.yaml')
+
+# Deploy PostgreSQL database
+k8s_yaml('k8s/apps/catalog/postgres.yaml')
+
+# Build catalog service Docker image
+docker_build(
+    'catalog-service:latest',
+    './services/catalog',
+    dockerfile='./services/catalog/Dockerfile'
+)
+
+# Deploy catalog service
+k8s_yaml('k8s/apps/catalog/deployment.yaml')
+k8s_yaml('k8s/apps/catalog/service.yaml')
+k8s_yaml('k8s/apps/catalog/ingress.yaml')
+

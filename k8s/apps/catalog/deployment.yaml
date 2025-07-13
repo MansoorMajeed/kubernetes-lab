@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog
+  namespace: catalog
+  labels:
+    app: catalog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalog
+  template:
+    metadata:
+      labels:
+        app: catalog
+      annotations:
+        # Loki log collection annotations
+        loki.grafana.com/scrape: "true"
+        loki.grafana.com/log-format: "json"
+    spec:
+      containers:
+      - name: catalog
+        image: catalog-service:latest
+        imagePullPolicy: Never  # Use local image built by Tilt
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: PORT
+          value: "8080"
+        - name: DB_HOST
+          value: "postgres.catalog.svc.cluster.local"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "localmart"
+        - name: DB_USER
+          value: "catalog_user"
+        - name: DB_PASSWORD
+          value: "catalog_pass"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi 

@@ -24,6 +24,9 @@ A full local Kubernetes setup with monitoring, logging and demo apps - Using k3d
 127.0.0.1  grafana.kubelab.lan
 127.0.0.1  prometheus.kubelab.lan
 
+# Services
+127.0.0.1 catalog.kubelab.lan
+
 ```
 
 * **On macOS/Linux:** Edit `/etc/hosts` (e.g., `sudo nano /etc/hosts`).
