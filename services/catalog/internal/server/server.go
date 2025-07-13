@@ -23,14 +23,18 @@ func NewServer(database *sql.DB) *Server {
 	// Set Gin to release mode for production
 	gin.SetMode(gin.ReleaseMode)
 
-	router := gin.Default()
+	// Create router without default middleware (no default logging)
+	router := gin.New()
+
+	// Add recovery middleware (but not logging - we'll add our own)
+	router.Use(gin.Recovery())
 
 	server := &Server{
 		router: router,
 		db:     database,
 	}
 
-	// Add logging middleware
+	// Add our custom logging middleware
 	server.router.Use(server.loggingMiddleware())
 
 	// Setup routes
@@ -46,6 +50,11 @@ func (s *Server) loggingMiddleware() gin.HandlerFunc {
 
 		// Process request
 		c.Next()
+
+		// Skip logging for health check endpoints to reduce noise
+		if c.Request.URL.Path == "/health" {
+			return
+		}
 
 		// Log request details
 		duration := time.Since(start)
