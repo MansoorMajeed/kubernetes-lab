@@ -24,7 +24,25 @@
 - Observability stack deployed in `monitoring` namespace
 - Alloy uses Kubernetes API approach (not filesystem) for log collection
 - Regular deployments preferred over DaemonSets when possible
-- Services exposed via port-forwarding for local access
+- Services exposed via ingress with domain names (not port-forwarding)
+
+## Service Access via Ingress
+- **Domain Pattern**: `<service-name>.kubelab.lan:<port>` - All services use this domain format
+- **k3d Port**: Services are accessed via port `8081` (configured in k3d setup)
+- **Examples**:
+  - Catalog Service: `catalog.kubelab.lan:8081`
+  - Shopping Cart Service: `cart.kubelab.lan:8081`
+  - Order Service: `orders.kubelab.lan:8081`
+  - User Service: `users.kubelab.lan:8081`
+- **etc/hosts Setup**: Add entries to `/etc/hosts` for local resolution:
+  ```
+  127.0.0.1 catalog.kubelab.lan
+  127.0.0.1 cart.kubelab.lan
+  127.0.0.1 orders.kubelab.lan
+  127.0.0.1 users.kubelab.lan
+  ```
+- **Ingress Configuration**: Each service has its own ingress resource for domain-based routing
+- **Real-world Simulation**: This mimics how services would be accessed in production environments
 
 ## Structured Logging Patterns
 - **JSON logging format** - All applications should output structured JSON logs
@@ -46,12 +64,13 @@
 - `./kubectl-lab get pods -n monitoring` - Check observability stack
 - `./kubectl-lab get nodes` - Verify k3d cluster is running
 - `./kubectl-lab logs -n frontend -l app=nginx-hello-world` - View application logs
-- `./kubectl-lab port-forward -n frontend svc/nginx-hello-world 8080:80` - Access services locally
+- `./kubectl-lab get ingress -A` - View all ingress resources and their domains
 
 ## Configuration Files
 - `*-values.yaml`: Helm chart configurations
 - `*.yaml` in k8s/: Kubernetes manifests
 - `*-configmap.yaml`: ConfigMaps for application configurations (logging, etc.)
+- `*-ingress.yaml`: Ingress resources for domain-based routing
 - Use specific namespaces for organization (monitoring, frontend, etc.)
 
 ## Architecture Decisions
@@ -60,6 +79,7 @@
 - Networking: Services communicate via cluster DNS
 - Logging: Structured JSON logs with comprehensive field coverage
 - Monitoring: Prometheus for metrics, Loki for logs, Grafana for visualization
+- Access: Ingress-based domain routing instead of port-forwarding
 
 ## Tiltfile Management
 - ConfigMaps must be added to Tiltfile before their dependent deployments
