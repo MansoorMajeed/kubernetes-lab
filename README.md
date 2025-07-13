@@ -3,6 +3,8 @@ A full local Kubernetes setup with monitoring, logging and demo apps - Using k3d
 
 > Note: this is a work in progress
 
+![Tilt Screenshot](./img/tilt-screenshot-1.png)
+
 ## Requirements
 
 1. [Install Docker](https://docs.docker.com/engine/install/)
