@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"catalog-service/internal/db"
 	"catalog-service/internal/handlers"
 
 	"github.com/gin-gonic/gin"
@@ -14,9 +15,10 @@ import (
 type Server struct {
 	router *gin.Engine
 	server *http.Server
+	db     *db.Database
 }
 
-func New() *Server {
+func New(database *db.Database) *Server {
 	// Set gin to release mode for production
 	gin.SetMode(gin.ReleaseMode)
 
@@ -29,6 +31,7 @@ func New() *Server {
 	// Create server instance
 	s := &Server{
 		router: router,
+		db:     database,
 	}
 
 	// Setup routes
@@ -38,10 +41,10 @@ func New() *Server {
 }
 
 func (s *Server) setupRoutes() {
-	// Health check endpoint
-	s.router.GET("/health", handlers.HealthCheck)
+	// Health check endpoint with database
+	s.router.GET("/health", handlers.HealthCheckWithDB(s.db))
 
-	// API v1 routes (for future)
+	// API v1 routes
 	v1 := s.router.Group("/api/v1")
 	{
 		// Products routes will go here
