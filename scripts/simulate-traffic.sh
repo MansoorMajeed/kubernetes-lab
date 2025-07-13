@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # LocalMart Microservices Traffic Simulator
 # Simulates realistic e-commerce traffic patterns across multiple services
