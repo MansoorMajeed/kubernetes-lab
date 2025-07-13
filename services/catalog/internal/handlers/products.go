@@ -31,9 +31,9 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 		page = 1
 	}
 
-	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "50"))
 	if err != nil || limit < 1 || limit > 100 {
-		limit = 10
+		limit = 50
 	}
 
 	offset := (page - 1) * limit
