@@ -3,9 +3,17 @@
 # LocalMart Microservices Traffic Simulator
 # Simulates realistic e-commerce traffic patterns across multiple services
 
+
 # This script is a vibe code product. Not every flag might work. I have not tested everything
 
 set -e
+
+# Check dependencies
+if ! command -v bc &> /dev/null; then
+    echo "Error: 'bc' command is required but not installed."
+    echo "Install with: brew install bc (macOS) or apt-get install bc (Ubuntu)"
+    exit 1
+fi
 
 # Configuration
 DOMAIN="${DOMAIN:-kubelab.lan}"
@@ -102,18 +110,53 @@ seed_catalog_products() {
     local base_url="http://${SERVICES[catalog]}"
     log $BLUE "🌱 Seeding catalog products..."
     
-    # E-commerce product catalog
+    # E-commerce product catalog - diverse categories
     local products=(
+        # Apple Products
         '{"name":"MacBook Pro 14\"","description":"Apple MacBook Pro 14-inch with M3 chip, 16GB RAM, 512GB SSD","price":1999.99,"stock_quantity":25}'
         '{"name":"iPhone 15 Pro","description":"Latest iPhone with titanium design and USB-C","price":999.99,"stock_quantity":50}'
         '{"name":"AirPods Pro","description":"Wireless earbuds with active noise cancellation","price":249.99,"stock_quantity":100}'
         '{"name":"iPad Air","description":"Powerful tablet with M2 chip and 10.9-inch display","price":599.99,"stock_quantity":75}'
         '{"name":"Apple Watch Series 9","description":"Advanced smartwatch with health monitoring","price":399.99,"stock_quantity":40}'
+        
+        # Electronics & Tech
         '{"name":"Samsung Galaxy S24 Ultra","description":"Premium Android smartphone with S Pen and 200MP camera","price":1199.99,"stock_quantity":30}'
         '{"name":"Sony WH-1000XM5","description":"Industry-leading noise canceling wireless headphones","price":399.99,"stock_quantity":60}'
         '{"name":"Dell XPS 13","description":"13-inch ultrabook with Intel Core i7 and 16GB RAM","price":1299.99,"stock_quantity":20}'
         '{"name":"Nintendo Switch OLED","description":"Gaming console with vibrant OLED screen","price":349.99,"stock_quantity":45}'
         '{"name":"Kindle Paperwhite","description":"Waterproof e-reader with 6.8-inch display","price":139.99,"stock_quantity":80}'
+        
+        # Home & Kitchen
+        '{"name":"Instant Pot Duo 7-in-1","description":"Multi-use pressure cooker and slow cooker","price":99.99,"stock_quantity":65}'
+        '{"name":"Dyson V15 Detect","description":"Cordless vacuum with laser dust detection","price":749.99,"stock_quantity":15}'
+        '{"name":"Nespresso Vertuo Next","description":"Coffee and espresso machine with centrifusion technology","price":199.99,"stock_quantity":35}'
+        '{"name":"KitchenAid Stand Mixer","description":"Professional 5-quart stand mixer in multiple colors","price":429.99,"stock_quantity":25}'
+        '{"name":"Philips Hue Smart Bulbs 4-Pack","description":"Color-changing LED smart bulbs","price":199.99,"stock_quantity":90}'
+        
+        # Sports & Fitness
+        '{"name":"Peloton Bike+","description":"Indoor exercise bike with rotating HD touchscreen","price":2495.00,"stock_quantity":8}'
+        '{"name":"Fitbit Charge 5","description":"Advanced fitness tracker with built-in GPS","price":179.99,"stock_quantity":55}'
+        '{"name":"Yeti Rambler 30oz","description":"Stainless steel tumbler with MagSlider lid","price":39.99,"stock_quantity":120}'
+        '{"name":"Nike Air Max 270","description":"Mens running shoes with Max Air heel unit","price":149.99,"stock_quantity":75}'
+        '{"name":"Hydro Flask 32oz","description":"Insulated stainless steel water bottle","price":44.99,"stock_quantity":85}'
+        
+        # Books & Media
+        '{"name":"The Thursday Murder Club","description":"Bestselling mystery novel by Richard Osman","price":16.99,"stock_quantity":150}'
+        '{"name":"Atomic Habits","description":"Life-changing guide to building good habits","price":18.99,"stock_quantity":200}'
+        '{"name":"PlayStation 5","description":"Next-generation gaming console","price":499.99,"stock_quantity":12}'
+        '{"name":"Meta Quest 3","description":"Mixed reality VR headset with 128GB storage","price":499.99,"stock_quantity":18}'
+        
+        # Fashion & Accessories
+        '{"name":"Levis 501 Original Jeans","description":"Classic straight-leg denim jeans","price":89.99,"stock_quantity":110}'
+        '{"name":"Ray-Ban Aviator Sunglasses","description":"Classic gold-frame aviator sunglasses","price":154.99,"stock_quantity":40}'
+        '{"name":"Patagonia Better Sweater","description":"Recycled fleece pullover jacket","price":139.99,"stock_quantity":60}'
+        '{"name":"Allbirds Tree Runners","description":"Sustainable running shoes made from eucalyptus","price":98.99,"stock_quantity":70}'
+        
+        # Home Essentials
+        '{"name":"Casper Original Mattress Queen","description":"Premium memory foam mattress with zoned support","price":1095.00,"stock_quantity":10}'
+        '{"name":"Roomba j7+","description":"Self-emptying robot vacuum with smart mapping","price":649.99,"stock_quantity":22}'
+        '{"name":"Ring Video Doorbell Pro","description":"1080p HD wireless doorbell with two-way talk","price":249.99,"stock_quantity":45}'
+        '{"name":"Nest Learning Thermostat","description":"Smart thermostat that learns your schedule","price":249.99,"stock_quantity":35}'
     )
     
     for product in "${products[@]}"; do
@@ -505,7 +548,11 @@ print_stats() {
     echo "   Total Requests: $TOTAL_REQUESTS"
     echo "   Successful:     $SUCCESSFUL_REQUESTS"
     echo "   Failed:         $FAILED_REQUESTS"
-    echo "   Success Rate:   $(echo "scale=2; $SUCCESSFUL_REQUESTS * 100 / $TOTAL_REQUESTS" | bc 2>/dev/null || echo "N/A")%"
+    if [[ $TOTAL_REQUESTS -gt 0 ]]; then
+        echo "   Success Rate:   $(echo "scale=2; $SUCCESSFUL_REQUESTS * 100 / $TOTAL_REQUESTS" | bc 2>/dev/null || echo "N/A")%"
+    else
+        echo "   Success Rate:   N/A%"
+    fi
     echo "   Products Created: ${#CREATED_PRODUCT_IDS[@]}"
     echo "   Users Created:    ${#CREATED_USER_IDS[@]}"
     echo "   Orders Created:   ${#CREATED_ORDER_IDS[@]}"
@@ -571,23 +618,19 @@ while [[ $# -gt 0 ]]; do
         --domain)
             DOMAIN="$2"
             # Update services with new domain
-            SERVICES=(
-                ["catalog"]="catalog.${DOMAIN}:${PORT}"
-                ["cart"]="cart.${DOMAIN}:${PORT}"
-                ["orders"]="orders.${DOMAIN}:${PORT}"
-                ["users"]="users.${DOMAIN}:${PORT}"
-            )
+            SERVICES["catalog"]="catalog.${DOMAIN}:${PORT}"
+            SERVICES["cart"]="cart.${DOMAIN}:${PORT}"
+            SERVICES["orders"]="orders.${DOMAIN}:${PORT}"
+            SERVICES["users"]="users.${DOMAIN}:${PORT}"
             shift 2
             ;;
         --port)
             PORT="$2"
             # Update services with new port
-            SERVICES=(
-                ["catalog"]="catalog.${DOMAIN}:${PORT}"
-                ["cart"]="cart.${DOMAIN}:${PORT}"
-                ["orders"]="orders.${DOMAIN}:${PORT}"
-                ["users"]="users.${DOMAIN}:${PORT}"
-            )
+            SERVICES["catalog"]="catalog.${DOMAIN}:${PORT}"
+            SERVICES["cart"]="cart.${DOMAIN}:${PORT}"
+            SERVICES["orders"]="orders.${DOMAIN}:${PORT}"
+            SERVICES["users"]="users.${DOMAIN}:${PORT}"
             shift 2
             ;;
         --verbose)
