@@ -42,14 +42,12 @@ show_usage() {
     echo "  prepare-release <phase>  Prepare files for a new phase release"
     echo "  current-phase           Show current phase (if on a tag)"
     echo "  phase-diff <phase1> <phase2>  Show differences between phases"
-    echo "  create-retrospective-tags     Create tags for phases that should have existed"
     echo ""
     echo "Examples:"
     echo "  $0 list-phases"
     echo "  $0 checkout v1.0.0-monitoring-foundation"
     echo "  $0 create-tag v1.1.0-loki-integration 'Add Loki for log aggregation'"
     echo "  $0 prepare-release v2.0.0-basic-service"
-    echo "  $0 create-retrospective-tags"
 }
 
 # List all phase tags
@@ -61,7 +59,7 @@ list_phases() {
     local tags=$(git tag | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | sort -V)
     
     if [ -z "$tags" ]; then
-        print_warning "No phase tags found. Use 'create-retrospective-tags' to create initial tags."
+        print_warning "No phase tags found."
         return 0
     fi
     
@@ -230,97 +228,6 @@ current_phase() {
     fi
 }
 
-# Create retrospective tags for phases that should have existed
-create_retrospective_tags() {
-    print_info "Creating retrospective tags for missing phases..."
-    echo ""
-    
-    print_warning "This will create tags for phases that should have existed historically."
-    print_warning "This is useful for setting up the initial phase structure."
-    echo ""
-    
-    # Check if we're on main and have a clean working tree
-    local current_branch=$(git branch --show-current)
-    if [ "$current_branch" != "main" ]; then
-        print_error "Must be on main branch to create retrospective tags"
-        return 1
-    fi
-    
-    if ! git diff --quiet; then
-        print_error "Working tree is not clean. Please commit or stash changes."
-        return 1
-    fi
-    
-    read -p "Do you want to continue? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        print_info "Aborted"
-        return 1
-    fi
-    
-    # Strategy: Create tags at specific commits that represent each phase
-    # Since we already have the go service, we need to create earlier tags
-    # at commits before the service was added
-    
-    print_info "Analyzing git history to find appropriate commits for retrospective tags..."
-    
-    # Find commits that would represent each phase
-    local commits=$(git log --oneline --reverse)
-    
-    # For now, let's create tags at current HEAD with different names
-    # This is a starting point - in real usage, you'd create these at appropriate historical commits
-    
-    print_info "Creating Phase 1 foundation tags..."
-    
-    # Create a temporary branch to work with historical state
-    git checkout -b temp-phase-creation
-    
-    # Reset to a point before the Go service was added (you'd need to identify this commit)
-    # For demonstration, we'll use HEAD~10 or find the appropriate commit
-    
-    # Find the commit before Go service was added
-    local pre_service_commit=$(git log --oneline --grep="add.*service\|Add.*service" | tail -n 1 | cut -d' ' -f1)
-    
-    if [ -z "$pre_service_commit" ]; then
-        # If we can't find a specific commit, use a reasonable point in history
-        print_warning "Could not find commit before service was added. Using HEAD~5"
-        pre_service_commit="HEAD~5"
-    fi
-    
-    # Create tags at the appropriate historical points
-    print_info "Creating v1.0.0-monitoring-foundation tag..."
-    git tag -a v1.0.0-monitoring-foundation "$pre_service_commit" -m "Phase 1.0.0: Basic monitoring stack with Prometheus and Grafana"
-    
-    print_info "Creating v1.1.0-loki-integration tag..."
-    git tag -a v1.1.0-loki-integration "$pre_service_commit" -m "Phase 1.1.0: Add Loki for log aggregation"
-    
-    print_info "Creating v1.2.0-alloy-collection tag..."
-    git tag -a v1.2.0-alloy-collection "$pre_service_commit" -m "Phase 1.2.0: Add Alloy for advanced log collection"
-    
-    # Now tag the current state as v2.0.0
-    git checkout main
-    git branch -D temp-phase-creation
-    
-    print_info "Creating v2.0.0-basic-service tag..."
-    git tag -a v2.0.0-basic-service HEAD -m "Phase 2.0.0: Deploy catalog service with basic observability"
-    
-    print_success "Retrospective tags created successfully!"
-    echo ""
-    print_info "Created tags:"
-    echo "  v1.0.0-monitoring-foundation - Basic monitoring stack"
-    echo "  v1.1.0-loki-integration - Add Loki for logs"
-    echo "  v1.2.0-alloy-collection - Add Alloy for log collection"
-    echo "  v2.0.0-basic-service - Deploy catalog service"
-    echo ""
-    print_info "To push all tags to remote:"
-    echo "  git push origin --tags"
-    echo ""
-    print_info "Next steps:"
-    echo "  1. Test each phase: $0 checkout <phase-tag>"
-    echo "  2. Create GitHub releases for each tag"
-    echo "  3. Continue with v2.1.0 for Prometheus metrics"
-}
-
 # Show differences between phases
 phase_diff() {
     local phase1="$1"
@@ -371,9 +278,6 @@ case "$1" in
         ;;
     "phase-diff")
         phase_diff "$2" "$3"
-        ;;
-    "create-retrospective-tags")
-        create_retrospective_tags
         ;;
     *)
         show_usage
