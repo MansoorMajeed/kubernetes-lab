@@ -42,7 +42,11 @@ Run `./start-lab.sh` to start everything
 
 ## Stop / Start
 
-After the initial setup, you can use `tilt up` or `tilt down`
+After the initial setup, you can use `./tilt-lab up` or `./tilt-lab down`
+
+> Note: note that I am using `./tilt-lab` a wrapper script instead of `tilt` command itself. 
+> this is to ensure that tilt uses the appropriate kubernetes context (which should be of the k3d)
+> cluster we create as part of the setup
 
 
 ## Access
@@ -70,15 +74,13 @@ Based on the hosts entry you have added, you can access them like this
 > Note: The port number 8081 comes from the fact that we set it up to use port 8081
 > during k3d installation. Check the script `start-lab.sh`
 
-
-
-
-
 ### Grafana
 
-Access at grafana.kubelab.lan:8081
-Username: admin
-Password: password or whatever you set in the grafana-values.yaml
+Access at [grafana.kubelab.lan:8081](http://grafana.kubelab.lan:8081)
+- Username: admin 
+- Password: password or whatever you set in the grafana-values.yaml
+
+Checkout the dashboards, metrics and logs
 
 
 ## What is included
@@ -89,3 +91,14 @@ Password: password or whatever you set in the grafana-values.yaml
 2. Grafana
 3. Loki
 4. Grafana Alloy
+
+## Services
+
+- [Catalog Service](./services/catalog/)
+
+rest to come
+
+
+## Simulate traffic
+
+Run [the script](./scripts/simulate-traffic.sh) to simulate some traffic
