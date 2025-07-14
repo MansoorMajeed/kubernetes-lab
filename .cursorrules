@@ -6,18 +6,48 @@
 - **Experimentation friendly** - safe to try different approaches and configurations
 - **Educational focus** - explain concepts and trade-offs, not just solutions
 
+## Phased Learning Approach
+- **Progressive complexity** - Each phase builds on previous knowledge
+- **Tagged releases** - Use git tags with semantic versioning for each phase milestone
+- **Automated deployment** - Tilt handles all deployment; learners focus on understanding concepts
+- **Clear documentation** - Each phase has dedicated documentation and learning objectives
+- **Exploration-based learning** - Exercises focus on understanding deployed services, not manual deployment
+
+### Phase Structure
+- **Phase 1 (v1.x)**: Foundation - Basic k3d, Prometheus, Grafana, Loki, Alloy
+- **Phase 2 (v2.x)**: First Service - Single Go service with basic observability
+- **Phase 3 (v3.x)**: Microservices - Multiple services with inter-service communication
+- **Phase 4 (v4.x)**: Advanced Observability - APM, custom metrics, alerting
+
+### Release Strategy
+- **Git tags**: Use semantic versioning with descriptive suffixes (e.g., `v1.0.0-monitoring-foundation`)
+- **GitHub releases**: Each tag gets a release with changelog and learning objectives
+- **Documentation**: Each phase has dedicated docs in `phases/` directory
+- **Scripts**: Phase-specific deployment scripts for easy setup
+
 ## Project Structure
 - `k8s/apps/`: Application deployments (nginx-hello-world, etc.)
 - `k8s/observability/`: Monitoring stack (Prometheus, Loki, Grafana, Alloy)
+- `phases/`: Phase-specific documentation and learning guides
 - `./kubectl-lab`: Wrapper script for kubectl commands against local k3d cluster
 - `./start-lab.sh`: Script to start the k3d environment
-- `Tiltfile`: Tilt configuration for local development
+- `./tilt-lab`: Wrapper script for Tilt with appropriate kubeconfig
+- `Tiltfile`: Tilt configuration for automated deployment
+- `scripts/manage-phases.sh`: Phase management and git tag utilities
 
 ## Technology Stack
 - **Kubernetes**: k3d (Docker-based local cluster)
 - **Monitoring**: Prometheus + Loki + Grafana + Alloy
 - **Package Manager**: Helm charts
-- **Local Development**: Tilt
+- **Local Development**: Tilt (automated deployment and development)
+- **Learning Management**: Git tags for phase progression
+
+## Automation vs Learning Philosophy
+- **Tilt automation**: Handles all deployment complexity automatically
+- **Learning focus**: Documentation explains concepts, not manual deployment steps
+- **Phase exploration**: Learners can checkout git tags to see system state at each phase
+- **Hands-on exercises**: Focus on understanding deployed services, not deployment mechanics
+- **Progressive complexity**: Each phase builds on previous knowledge without deployment friction
 
 ## Key Patterns
 - Use `./kubectl-lab` instead of direct kubectl for cluster operations
@@ -61,10 +91,13 @@
 
 ## Common Commands
 - `./start-lab.sh` - Start the k3d environment
+- `./tilt-lab up` - Deploy all services automatically (main deployment command)
 - `./kubectl-lab get pods -n monitoring` - Check observability stack
 - `./kubectl-lab get nodes` - Verify k3d cluster is running
 - `./kubectl-lab logs -n frontend -l app=nginx-hello-world` - View application logs
 - `./kubectl-lab get ingress -A` - View all ingress resources and their domains
+- `./scripts/manage-phases.sh list-phases` - List available learning phases
+- `./scripts/manage-phases.sh checkout v1.0.0-monitoring-foundation` - Switch to a specific phase
 
 ## Configuration Files
 - `*-values.yaml`: Helm chart configurations
