@@ -14,10 +14,15 @@ spec:
     metadata:
       labels:
         app: catalog
+        monitoring.kubelab.lan/scrape: "true"  # Enable Prometheus metrics collection
       annotations:
         # Loki log collection annotations
         loki.grafana.com/scrape: "true"
         loki.grafana.com/log-format: "json"
+        # Prometheus metrics annotations
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
       - name: catalog
