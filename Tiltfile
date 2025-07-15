@@ -9,6 +9,7 @@ print("   OR use: ./tilt-lab up")
 k8s_yaml('k8s/observability/namespace.yaml') # Create the monitoring namespace
 k8s_yaml('k8s/apps/nginx-hello-world/namespace.yaml') # Create the monitoring namespace
 k8s_yaml('k8s/observability/loki-dashboard-configmap.yaml') # Load the Loki dashboard
+k8s_yaml('k8s/observability/dashboards/catalog-dashboard-configmap.yaml') # Load the Catalog Service dashboard
 
 # Observability setup
 load('ext://helm_resource', 'helm_resource', 'helm_repo')
