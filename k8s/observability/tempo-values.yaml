@@ -1,0 +1,96 @@
+# Tempo configuration for distributed tracing
+# Single binary mode for simplicity in learning environment
+
+# Use single binary deployment mode (simpler for learning)
+tempo:
+  # Basic authentication disabled for lab environment
+  multitenancy_enabled: false
+  
+  # Configure trace ingestion
+  distributor:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:4317"
+          http:
+            endpoint: "0.0.0.0:4318"
+
+  # Storage configuration (local for lab)
+  storage:
+    trace:
+      backend: local
+      local:
+        path: /var/tempo/traces
+      
+  # Query frontend configuration  
+  query_frontend:
+    search:
+      duration_slo: 5s
+      throughput_bytes_slo: 1.073741824e+09
+    trace_by_id:
+      duration_slo: 5s
+
+# Deployment configuration
+replicas: 1
+
+# Configure as single binary for simplicity
+config: |
+  multitenancy_enabled: false
+  usage_report:
+    reporting_enabled: false
+  compactor:
+    compaction:
+      block_retention: 1h
+  distributor:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+  ingester:
+    max_block_duration: 5m
+  server:
+    http_listen_port: 3200
+    log_level: info
+  storage:
+    trace:
+      backend: local
+      local:
+        path: /var/tempo/traces
+      wal:
+        path: /var/tempo/wal
+  query_frontend:
+    search:
+      duration_slo: 5s
+      throughput_bytes_slo: 1.073741824e+09
+    trace_by_id:
+      duration_slo: 5s
+
+# Service configuration
+service:
+  type: ClusterIP
+
+# Persistence for trace storage
+persistence:
+  enabled: true
+  size: 2Gi
+  accessModes:
+    - ReadWriteOnce
+
+# Resource limits for lab environment
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534  # nobody user
+  fsGroup: 65534 

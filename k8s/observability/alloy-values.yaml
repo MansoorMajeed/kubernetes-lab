@@ -1,4 +1,4 @@
-# Simplified Alloy configuration using built-in log mounting
+# Alloy configuration for unified telemetry collection (logs + traces)
 alloy:
   configMap:
     content: |
@@ -64,6 +64,28 @@ alloy:
         }
       }
 
+      // OTLP receiver for traces (receives from Go applications)
+      otelcol.receiver.otlp "default" {
+        grpc {
+          endpoint = "0.0.0.0:4317"
+        }
+        http {
+          endpoint = "0.0.0.0:4318"
+        }
+        
+        output {
+          traces = [otelcol.exporter.otlp.tempo.input]
+        }
+      }
+
+      // OTLP exporter to send traces to Tempo
+      otelcol.exporter.otlp "tempo" {
+        client {
+          endpoint = "http://tempo:3200"
+          insecure = true
+        }
+      }
+
   # No filesystem mounting needed for Kubernetes API access
   mounts:
     varlog: false
@@ -71,6 +93,24 @@ alloy:
 # Deploy as regular deployment (no filesystem access needed)
 controller:
   type: "deployment"
+
+# Service configuration to expose OTLP ports
+service:
+  enabled: true
+  type: ClusterIP
+  ports:
+    http:
+      port: 12345
+      targetPort: 12345
+      protocol: TCP
+    otlp-grpc:
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    otlp-http:
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
 
 # Service account and RBAC
 serviceAccount:

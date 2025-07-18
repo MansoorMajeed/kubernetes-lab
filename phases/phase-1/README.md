@@ -10,7 +10,7 @@ By the end of this phase, you will:
 - Set up Prometheus for metrics collection
 - Configure Grafana for data visualization
 - Deploy Loki for log aggregation
-- Set up Alloy for log collection
+- Set up Alloy for unified telemetry collection (logs, with metrics and traces capability)
 
 
 ## Phase Milestones

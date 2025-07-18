@@ -49,6 +49,14 @@ helm_resource(
     flags=['--values', 'k8s/observability/alloy-values.yaml']
 )
 
+helm_resource(
+    'tempo',
+    'grafana-repo/tempo',
+    namespace='monitoring',
+    resource_deps=['grafana-repo'],
+    flags=['--values', 'k8s/observability/tempo-values.yaml']
+)
+
 k8s_yaml('k8s/observability/ingress.yaml')
 
 ### Observability setup complete
