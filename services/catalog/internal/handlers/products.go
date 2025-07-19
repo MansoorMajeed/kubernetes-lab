@@ -39,7 +39,7 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 	offset := (page - 1) * limit
 
 	// Get products from database
-	products, err := h.productService.GetAllProducts(offset, limit)
+	products, err := h.productService.GetAllProducts(c, offset, limit)
 	if err != nil {
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component": "handler",
@@ -69,10 +69,10 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 	}).Info("Retrieved products")
 
 	c.JSON(http.StatusOK, gin.H{
-		"products": responses,
-		"page":     page,
-		"limit":    limit,
-		"count":    len(responses),
+		"data":  responses,
+		"page":  page,
+		"limit": limit,
+		"count": len(responses),
 	})
 }
 
@@ -95,7 +95,7 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 	}
 
 	// Get product from database
-	product, err := h.productService.GetProduct(id)
+	product, err := h.productService.GetProduct(c, id)
 	if err != nil {
 		if err.Error() == "product not found" {
 			logger.WithFields(logrus.Fields{
@@ -122,7 +122,9 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, product.ToResponse())
+	c.JSON(http.StatusOK, gin.H{
+		"data": product.ToResponse(),
+	})
 }
 
 // CreateProduct handles POST /api/v1/products
@@ -144,7 +146,7 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	}
 
 	// Create product in database
-	product, err := h.productService.CreateProduct(req)
+	product, err := h.productService.CreateProduct(c, req)
 	if err != nil {
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component": "handler",
@@ -167,7 +169,9 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 		"price":      product.Price,
 	}).Info("Product created successfully")
 
-	c.JSON(http.StatusCreated, product.ToResponse())
+	c.JSON(http.StatusCreated, gin.H{
+		"data": product.ToResponse(),
+	})
 }
 
 // UpdateProduct handles PUT /api/v1/products/:id
@@ -206,7 +210,7 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	}
 
 	// Update product in database
-	product, err := h.productService.UpdateProduct(id, req)
+	product, err := h.productService.UpdateProduct(c, id, req)
 	if err != nil {
 		if err.Error() == "product not found" {
 			logger.WithFields(logrus.Fields{
@@ -263,7 +267,7 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 	}
 
 	// Delete product from database
-	err = h.productService.DeleteProduct(id)
+	err = h.productService.DeleteProduct(c, id)
 	if err != nil {
 		if err.Error() == "product not found" {
 			logger.WithFields(logrus.Fields{
