@@ -21,19 +21,13 @@ By the end of this phase, you will:
 - Set up PostgreSQL database
 - Implement basic health checks
 
-### v2.1.0: Structured Logging
-- JSON logging format
-- Correlation IDs for trace-log correlation
-- Loki integration with labels
-- Log-based alerting
-
-### v2.2.0: Prometheus Metrics
+### v2.1.0: Prometheus Metrics
 - Add Prometheus metrics to Go service
 - Custom application metrics (request counts, durations, etc.)
 - Service discovery integration
 - Application-specific Grafana dashboards
 
-### v2.3.0: Distributed Tracing
+### v2.2.0: Distributed Tracing
 - OpenTelemetry integration in Go service
 - Grafana Tempo deployment for trace storage
 - Alloy configuration for trace collection
