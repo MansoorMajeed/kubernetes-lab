@@ -9,13 +9,11 @@ import (
 	"catalog-service/internal/logger"
 	"catalog-service/internal/metrics"
 	"catalog-service/internal/models"
-	"catalog-service/internal/tracing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -24,7 +22,6 @@ type Server struct {
 	router  *gin.Engine
 	db      *sql.DB
 	metrics *metrics.HTTPMetrics
-	tracer  trace.Tracer
 }
 
 // NewServer creates a new server instance
@@ -41,14 +38,10 @@ func NewServer(database *sql.DB) *Server {
 	// Initialize metrics
 	httpMetrics := metrics.NewHTTPMetrics()
 
-	// Get tracer for this service
-	serviceTracer := tracing.GetTracer()
-
 	server := &Server{
 		router:  router,
 		db:      database,
 		metrics: httpMetrics,
-		tracer:  serviceTracer,
 	}
 
 	// Add middleware in order:
@@ -133,29 +126,6 @@ func (s *Server) metricsMiddleware() gin.HandlerFunc {
 			duration,
 		)
 	}
-}
-
-// dbQueryWithTracing executes a database query with tracing
-func (s *Server) dbQueryWithTracing(ctx *gin.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	// Create a span for the database query
-	spanCtx, span := s.tracer.Start(ctx.Request.Context(), "db.query")
-	defer span.End()
-
-	// Add attributes to the span
-	span.SetAttributes(
-		attribute.String("db.system", "postgresql"),
-		attribute.String("db.statement", query),
-		attribute.String("db.operation", "SELECT"), // Could be dynamic based on query
-	)
-
-	// Execute the query with the span context
-	rows, err := s.db.QueryContext(spanCtx, query, args...)
-	if err != nil {
-		span.RecordError(err)
-		span.SetAttributes(attribute.String("error", "true"))
-	}
-
-	return rows, err
 }
 
 // setupRoutes configures all the routes for the server

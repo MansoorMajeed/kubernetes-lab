@@ -35,9 +35,12 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 			}).Error("Database health check failed")
 
 			c.JSON(http.StatusServiceUnavailable, gin.H{
-				"status":   "unhealthy",
-				"database": "disconnected",
-				"error":    err.Error(),
+				"data": gin.H{
+					"status":   "unhealthy",
+					"database": "disconnected",
+					"service":  "catalog-service",
+				},
+				"error": err.Error(),
 			})
 			return
 		}
@@ -51,8 +54,10 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 	}).Info("Health check successful")
 
 	c.JSON(http.StatusOK, gin.H{
-		"status":   "healthy",
-		"database": "connected",
-		"service":  "catalog-service",
+		"data": gin.H{
+			"status":   "healthy",
+			"database": "connected",
+			"service":  "catalog-service",
+		},
 	})
 }
