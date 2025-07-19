@@ -6,7 +6,10 @@ import (
 
 	"catalog-service/internal/logger"
 
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 // Product represents a product in the catalog
@@ -54,14 +57,27 @@ func NewProductService(db *sql.DB) *ProductService {
 }
 
 // CreateProduct creates a new product in the database
-func (s *ProductService) CreateProduct(req ProductCreateRequest) (*Product, error) {
+func (s *ProductService) CreateProduct(ctx *gin.Context, req ProductCreateRequest) (*Product, error) {
+	// Start a database span
+	tracer := otel.Tracer("catalog-service")
+	dbCtx, span := tracer.Start(ctx.Request.Context(), "db.create_product")
+	defer span.End()
+
+	// Add span attributes
+	span.SetAttributes(
+		attribute.String("db.operation", "INSERT"),
+		attribute.String("db.table", "products"),
+		attribute.String("product.name", req.Name),
+		attribute.Float64("product.price", req.Price),
+	)
+
 	query := `
 		INSERT INTO products (name, description, price, stock_quantity)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id, name, description, price, stock_quantity`
 
 	var product Product
-	err := s.db.QueryRow(query, req.Name, req.Description, req.Price, req.StockQty).Scan(
+	err := s.db.QueryRowContext(dbCtx, query, req.Name, req.Description, req.Price, req.StockQty).Scan(
 		&product.ID,
 		&product.Name,
 		&product.Description,
@@ -69,6 +85,7 @@ func (s *ProductService) CreateProduct(req ProductCreateRequest) (*Product, erro
 		&product.StockQty,
 	)
 	if err != nil {
+		span.RecordError(err)
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component": "product",
 			"action":    "create",
@@ -77,6 +94,10 @@ func (s *ProductService) CreateProduct(req ProductCreateRequest) (*Product, erro
 		}).Error("Error creating product")
 		return nil, fmt.Errorf("failed to create product: %v", err)
 	}
+
+	span.SetAttributes(
+		attribute.Int("product.id", product.ID),
+	)
 
 	logger.WithFields(logrus.Fields{
 		"component":  "product",
@@ -90,11 +111,23 @@ func (s *ProductService) CreateProduct(req ProductCreateRequest) (*Product, erro
 }
 
 // GetProduct retrieves a product by ID
-func (s *ProductService) GetProduct(id int) (*Product, error) {
+func (s *ProductService) GetProduct(ctx *gin.Context, id int) (*Product, error) {
+	// Start a database span
+	tracer := otel.Tracer("catalog-service")
+	dbCtx, span := tracer.Start(ctx.Request.Context(), "db.get_product")
+	defer span.End()
+
+	// Add span attributes
+	span.SetAttributes(
+		attribute.String("db.operation", "SELECT"),
+		attribute.String("db.table", "products"),
+		attribute.Int("product.id", id),
+	)
+
 	query := `SELECT id, name, description, price, stock_quantity FROM products WHERE id = $1`
 
 	var product Product
-	err := s.db.QueryRow(query, id).Scan(
+	err := s.db.QueryRowContext(dbCtx, query, id).Scan(
 		&product.ID,
 		&product.Name,
 		&product.Description,
@@ -103,8 +136,10 @@ func (s *ProductService) GetProduct(id int) (*Product, error) {
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			span.SetAttributes(attribute.String("db.result", "not_found"))
 			return nil, fmt.Errorf("product not found")
 		}
+		span.RecordError(err)
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component":  "product",
 			"action":     "get",
@@ -113,15 +148,34 @@ func (s *ProductService) GetProduct(id int) (*Product, error) {
 		return nil, fmt.Errorf("failed to get product: %v", err)
 	}
 
+	span.SetAttributes(
+		attribute.String("db.result", "found"),
+		attribute.String("product.name", product.Name),
+	)
+
 	return &product, nil
 }
 
 // GetAllProducts retrieves all products with basic pagination
-func (s *ProductService) GetAllProducts(offset, limit int) ([]Product, error) {
+func (s *ProductService) GetAllProducts(ctx *gin.Context, offset, limit int) ([]Product, error) {
+	// Start a database span
+	tracer := otel.Tracer("catalog-service")
+	dbCtx, span := tracer.Start(ctx.Request.Context(), "db.get_all_products")
+	defer span.End()
+
+	// Add span attributes
+	span.SetAttributes(
+		attribute.String("db.operation", "SELECT"),
+		attribute.String("db.table", "products"),
+		attribute.Int("query.offset", offset),
+		attribute.Int("query.limit", limit),
+	)
+
 	query := `SELECT id, name, description, price, stock_quantity FROM products ORDER BY id LIMIT $1 OFFSET $2`
 
-	rows, err := s.db.Query(query, limit, offset)
+	rows, err := s.db.QueryContext(dbCtx, query, limit, offset)
 	if err != nil {
+		span.RecordError(err)
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component": "product",
 			"action":    "list",
@@ -143,6 +197,7 @@ func (s *ProductService) GetAllProducts(offset, limit int) ([]Product, error) {
 			&product.StockQty,
 		)
 		if err != nil {
+			span.RecordError(err)
 			logger.WithError(err).WithFields(logrus.Fields{
 				"component": "product",
 				"action":    "list",
@@ -154,6 +209,7 @@ func (s *ProductService) GetAllProducts(offset, limit int) ([]Product, error) {
 	}
 
 	if err = rows.Err(); err != nil {
+		span.RecordError(err)
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component": "product",
 			"action":    "list",
@@ -162,13 +218,17 @@ func (s *ProductService) GetAllProducts(offset, limit int) ([]Product, error) {
 		return nil, fmt.Errorf("failed to iterate products: %v", err)
 	}
 
+	span.SetAttributes(
+		attribute.Int("products.count", len(products)),
+	)
+
 	return products, nil
 }
 
 // UpdateProduct updates an existing product
-func (s *ProductService) UpdateProduct(id int, req ProductUpdateRequest) (*Product, error) {
+func (s *ProductService) UpdateProduct(ctx *gin.Context, id int, req ProductUpdateRequest) (*Product, error) {
 	// First, get the current product
-	current, err := s.GetProduct(id)
+	current, err := s.GetProduct(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -187,6 +247,18 @@ func (s *ProductService) UpdateProduct(id int, req ProductUpdateRequest) (*Produ
 		current.StockQty = *req.StockQty
 	}
 
+	// Start a database span for the update
+	tracer := otel.Tracer("catalog-service")
+	dbCtx, span := tracer.Start(ctx.Request.Context(), "db.update_product")
+	defer span.End()
+
+	// Add span attributes
+	span.SetAttributes(
+		attribute.String("db.operation", "UPDATE"),
+		attribute.String("db.table", "products"),
+		attribute.Int("product.id", id),
+	)
+
 	// Update the database
 	query := `
 		UPDATE products 
@@ -195,7 +267,7 @@ func (s *ProductService) UpdateProduct(id int, req ProductUpdateRequest) (*Produ
 		RETURNING id, name, description, price, stock_quantity`
 
 	var product Product
-	err = s.db.QueryRow(query, current.Name, current.Description, current.Price, current.StockQty, id).Scan(
+	err = s.db.QueryRowContext(dbCtx, query, current.Name, current.Description, current.Price, current.StockQty, id).Scan(
 		&product.ID,
 		&product.Name,
 		&product.Description,
@@ -203,6 +275,7 @@ func (s *ProductService) UpdateProduct(id int, req ProductUpdateRequest) (*Produ
 		&product.StockQty,
 	)
 	if err != nil {
+		span.RecordError(err)
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component":  "product",
 			"action":     "update",
@@ -210,6 +283,11 @@ func (s *ProductService) UpdateProduct(id int, req ProductUpdateRequest) (*Produ
 		}).Error("Error updating product")
 		return nil, fmt.Errorf("failed to update product: %v", err)
 	}
+
+	span.SetAttributes(
+		attribute.String("product.name", product.Name),
+		attribute.Float64("product.price", product.Price),
+	)
 
 	logger.WithFields(logrus.Fields{
 		"component":  "product",
@@ -223,11 +301,24 @@ func (s *ProductService) UpdateProduct(id int, req ProductUpdateRequest) (*Produ
 }
 
 // DeleteProduct deletes a product by ID
-func (s *ProductService) DeleteProduct(id int) error {
+func (s *ProductService) DeleteProduct(ctx *gin.Context, id int) error {
+	// Start a database span
+	tracer := otel.Tracer("catalog-service")
+	dbCtx, span := tracer.Start(ctx.Request.Context(), "db.delete_product")
+	defer span.End()
+
+	// Add span attributes
+	span.SetAttributes(
+		attribute.String("db.operation", "DELETE"),
+		attribute.String("db.table", "products"),
+		attribute.Int("product.id", id),
+	)
+
 	query := `DELETE FROM products WHERE id = $1`
 
-	result, err := s.db.Exec(query, id)
+	result, err := s.db.ExecContext(dbCtx, query, id)
 	if err != nil {
+		span.RecordError(err)
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component":  "product",
 			"action":     "delete",
@@ -238,6 +329,7 @@ func (s *ProductService) DeleteProduct(id int) error {
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
+		span.RecordError(err)
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component":  "product",
 			"action":     "delete",
@@ -248,8 +340,14 @@ func (s *ProductService) DeleteProduct(id int) error {
 	}
 
 	if rowsAffected == 0 {
+		span.SetAttributes(attribute.String("db.result", "not_found"))
 		return fmt.Errorf("product not found")
 	}
+
+	span.SetAttributes(
+		attribute.Int64("db.rows_affected", rowsAffected),
+		attribute.String("db.result", "deleted"),
+	)
 
 	logger.WithFields(logrus.Fields{
 		"component":  "product",

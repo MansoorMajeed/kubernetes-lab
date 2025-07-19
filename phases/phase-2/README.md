@@ -21,23 +21,19 @@ By the end of this phase, you will:
 - Set up PostgreSQL database
 - Implement basic health checks
 
-### v2.1.0: Structured Logging
-- JSON logging format
-- Correlation IDs for trace-log correlation
-- Loki integration with labels
-- Log-based alerting
-
-### v2.2.0: Prometheus Metrics
+### v2.1.0: Prometheus Metrics
 - Add Prometheus metrics to Go service
 - Custom application metrics (request counts, durations, etc.)
 - Service discovery integration
 - Application-specific Grafana dashboards
 
-### v2.3.0: Distributed Tracing
-- OpenTelemetry integration
-- Jaeger deployment
-- Trace correlation across requests
-- Database query tracing
+### v2.2.0: Distributed Tracing
+- OpenTelemetry integration in Go service
+- Grafana Tempo deployment for trace storage
+- Alloy configuration for trace collection
+- Trace correlation across HTTP requests and database queries
+- Unified observability in Grafana (metrics + logs + traces)
+- TraceQL for trace querying and analysis
 
 
 
@@ -55,20 +51,26 @@ At the end of Phase 2, you'll have:
 │  └─────────────┘  └─────────────┘  └─────────────┘        │
 │                                                             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │   Catalog   │  │ PostgreSQL  │  │   Jaeger    │        │
-│  │  Service    │  │ Database    │  │  (Tracing)  │        │
-│  │   (Go)      │  │             │  │             │        │
+│  │   Catalog   │  │ PostgreSQL  │  │    Tempo    │        │
+│  │  Service    │  │ Database    │  │  (Traces)   │        │
+│  │(OpenTelemetry)│ │             │  │             │        │
 │  └─────────────┘  └─────────────┘  └─────────────┘        │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │                     Alloy                           │    │
+│  │          (Collects Metrics + Logs + Traces)        │    │
+│  └─────────────────────────────────────────────────────┘    │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ## Key Concepts Covered
 
-### Application Observability
+### Application Observability (Three Pillars)
 - **Metrics**: Custom application metrics with Prometheus
-- **Tracing**: Request flow visibility with OpenTelemetry
-- **Logging**: Structured logging with correlation
+- **Logs**: Structured logging with Loki integration and correlation
+- **Traces**: Request flow visibility with OpenTelemetry and Grafana Tempo
+- **Correlation**: Linking metrics, logs, and traces for complete observability
 - **Health Checks**: Application health monitoring
 
 ### Go Development
@@ -232,8 +234,7 @@ The service includes examples of:
 After completing Phase 2, you'll be ready for **Phase 3: Microservices**, where you'll:
 - Deploy multiple interconnected services
 - Implement service-to-service communication
-- Add circuit breakers and resilience patterns
-- Explore service mesh concepts
+
 
 
 ---

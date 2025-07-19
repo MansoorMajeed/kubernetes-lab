@@ -13,6 +13,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // Server represents the HTTP server
@@ -42,8 +44,14 @@ func NewServer(database *sql.DB) *Server {
 		metrics: httpMetrics,
 	}
 
-	// Add our custom middleware
+	// Add middleware in order:
+	// 1. OpenTelemetry tracing (creates spans)
+	router.Use(otelgin.Middleware("catalog-service"))
+
+	// 2. Our custom logging middleware (can use trace context)
 	server.router.Use(server.loggingMiddleware())
+
+	// 3. Our metrics middleware
 	server.router.Use(server.metricsMiddleware())
 
 	// Setup routes
@@ -52,7 +60,7 @@ func NewServer(database *sql.DB) *Server {
 	return server
 }
 
-// loggingMiddleware logs HTTP requests with structured JSON
+// loggingMiddleware logs HTTP requests with structured JSON and trace correlation
 func (s *Server) loggingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
@@ -65,18 +73,26 @@ func (s *Server) loggingMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Log request details
-		duration := time.Since(start)
-
-		logger.WithFields(logrus.Fields{
+		// Get trace information for correlation
+		spanCtx := trace.SpanContextFromContext(c.Request.Context())
+		fields := logrus.Fields{
 			"component":   "http",
 			"method":      c.Request.Method,
 			"path":        c.Request.URL.Path,
 			"status_code": c.Writer.Status(),
-			"duration_ms": duration.Milliseconds(),
+			"duration_ms": time.Since(start).Milliseconds(),
 			"client_ip":   c.ClientIP(),
 			"user_agent":  c.Request.UserAgent(),
-		}).Info("HTTP request processed")
+		}
+
+		// Add trace correlation if available
+		if spanCtx.IsValid() {
+			fields["trace_id"] = spanCtx.TraceID().String()
+			fields["span_id"] = spanCtx.SpanID().String()
+		}
+
+		// Log request details
+		logger.WithFields(fields).Info("HTTP request processed")
 	}
 }
 
