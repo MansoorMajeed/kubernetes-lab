@@ -81,8 +81,10 @@ alloy:
       // OTLP exporter to send traces to Tempo
       otelcol.exporter.otlp "tempo" {
         client {
-          endpoint = "http://tempo:3200"
-          insecure = true
+          endpoint = "tempo.monitoring.svc.cluster.local:4317"
+          tls {
+            insecure = true
+          }
         }
       }
 

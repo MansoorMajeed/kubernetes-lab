@@ -6,11 +6,27 @@ import (
 	"catalog-service/internal/db"
 	"catalog-service/internal/logger"
 	"catalog-service/internal/server"
+	"catalog-service/internal/tracing"
 
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
+	// Initialize OpenTelemetry tracing
+	cleanup, err := tracing.Setup("catalog-service")
+	if err != nil {
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component": "tracing",
+			"action":    "setup",
+		}).Fatal("Failed to initialize tracing")
+	}
+	defer cleanup()
+
+	logger.WithFields(logrus.Fields{
+		"component": "tracing",
+		"action":    "initialize",
+	}).Info("OpenTelemetry tracing initialized")
+
 	// Get database connection
 	database, err := db.Connect()
 	if err != nil {
@@ -49,7 +65,6 @@ func main() {
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component": "server",
 			"action":    "start",
-			"port":      port,
 		}).Fatal("Failed to start server")
 	}
 }

@@ -9,10 +9,14 @@ import (
 	"catalog-service/internal/logger"
 	"catalog-service/internal/metrics"
 	"catalog-service/internal/models"
+	"catalog-service/internal/tracing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // Server represents the HTTP server
@@ -20,6 +24,7 @@ type Server struct {
 	router  *gin.Engine
 	db      *sql.DB
 	metrics *metrics.HTTPMetrics
+	tracer  trace.Tracer
 }
 
 // NewServer creates a new server instance
@@ -36,14 +41,24 @@ func NewServer(database *sql.DB) *Server {
 	// Initialize metrics
 	httpMetrics := metrics.NewHTTPMetrics()
 
+	// Get tracer for this service
+	serviceTracer := tracing.GetTracer()
+
 	server := &Server{
 		router:  router,
 		db:      database,
 		metrics: httpMetrics,
+		tracer:  serviceTracer,
 	}
 
-	// Add our custom middleware
+	// Add middleware in order:
+	// 1. OpenTelemetry tracing (creates spans)
+	router.Use(otelgin.Middleware("catalog-service"))
+
+	// 2. Our custom logging middleware (can use trace context)
 	server.router.Use(server.loggingMiddleware())
+
+	// 3. Our metrics middleware
 	server.router.Use(server.metricsMiddleware())
 
 	// Setup routes
@@ -52,7 +67,7 @@ func NewServer(database *sql.DB) *Server {
 	return server
 }
 
-// loggingMiddleware logs HTTP requests with structured JSON
+// loggingMiddleware logs HTTP requests with structured JSON and trace correlation
 func (s *Server) loggingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
@@ -65,18 +80,26 @@ func (s *Server) loggingMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Log request details
-		duration := time.Since(start)
-
-		logger.WithFields(logrus.Fields{
+		// Get trace information for correlation
+		spanCtx := trace.SpanContextFromContext(c.Request.Context())
+		fields := logrus.Fields{
 			"component":   "http",
 			"method":      c.Request.Method,
 			"path":        c.Request.URL.Path,
 			"status_code": c.Writer.Status(),
-			"duration_ms": duration.Milliseconds(),
+			"duration_ms": time.Since(start).Milliseconds(),
 			"client_ip":   c.ClientIP(),
 			"user_agent":  c.Request.UserAgent(),
-		}).Info("HTTP request processed")
+		}
+
+		// Add trace correlation if available
+		if spanCtx.IsValid() {
+			fields["trace_id"] = spanCtx.TraceID().String()
+			fields["span_id"] = spanCtx.SpanID().String()
+		}
+
+		// Log request details
+		logger.WithFields(fields).Info("HTTP request processed")
 	}
 }
 
@@ -110,6 +133,29 @@ func (s *Server) metricsMiddleware() gin.HandlerFunc {
 			duration,
 		)
 	}
+}
+
+// dbQueryWithTracing executes a database query with tracing
+func (s *Server) dbQueryWithTracing(ctx *gin.Context, query string, args ...interface{}) (*sql.Rows, error) {
+	// Create a span for the database query
+	spanCtx, span := s.tracer.Start(ctx.Request.Context(), "db.query")
+	defer span.End()
+
+	// Add attributes to the span
+	span.SetAttributes(
+		attribute.String("db.system", "postgresql"),
+		attribute.String("db.statement", query),
+		attribute.String("db.operation", "SELECT"), // Could be dynamic based on query
+	)
+
+	// Execute the query with the span context
+	rows, err := s.db.QueryContext(spanCtx, query, args...)
+	if err != nil {
+		span.RecordError(err)
+		span.SetAttributes(attribute.String("error", "true"))
+	}
+
+	return rows, err
 }
 
 // setupRoutes configures all the routes for the server

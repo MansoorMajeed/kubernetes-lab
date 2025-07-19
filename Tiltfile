@@ -49,6 +49,9 @@ helm_resource(
     flags=['--values', 'k8s/observability/alloy-values.yaml']
 )
 
+# Add OTLP service for traces
+k8s_yaml('k8s/observability/alloy-otlp-service.yaml')
+
 helm_resource(
     'tempo',
     'grafana-repo/tempo',
@@ -58,6 +61,7 @@ helm_resource(
 )
 
 k8s_yaml('k8s/observability/ingress.yaml')
+k8s_yaml('k8s/observability/tempo-ingress.yaml')
 
 ### Observability setup complete
 

@@ -5,7 +5,7 @@ metadata:
   namespace: monitoring
   labels:
     grafana_dashboard: "1"
-    grafana_folder: "Catalog Service"
+    grafana_folder: "catalog-service"
 data:
   catalog-service.json: |
     {
@@ -41,7 +41,7 @@ data:
             },
             "id": 6,
             "panels": [],
-            "title": "HTTP Metrics",
+            "title": "HTTP Metrics & Traces",
             "type": "row"
           },
           {
@@ -51,58 +51,8 @@ data:
             },
             "fieldConfig": {
               "defaults": {
-                "color": {
-                  "mode": "palette-classic"
-                },
-                "custom": {
-                  "axisBorderShow": false,
-                  "axisCenteredZero": false,
-                  "axisColorMode": "text",
-                  "axisLabel": "",
-                  "axisPlacement": "auto",
-                  "barAlignment": 0,
-                  "barWidthFactor": 0.6,
-                  "drawStyle": "line",
-                  "fillOpacity": 0,
-                  "gradientMode": "none",
-                  "hideFrom": {
-                    "legend": false,
-                    "tooltip": false,
-                    "viz": false
-                  },
-                  "insertNulls": false,
-                  "lineInterpolation": "linear",
-                  "lineWidth": 1,
-                  "pointSize": 5,
-                  "scaleDistribution": {
-                    "type": "linear"
-                  },
-                  "showPoints": "auto",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  },
-                  "thresholdsStyle": {
-                    "mode": "off"
-                  }
-                },
-                "mappings": [],
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green"
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                },
                 "unit": "reqps"
-              },
-              "overrides": []
+              }
             },
             "gridPos": {
               "h": 8,
@@ -111,34 +61,10 @@ data:
               "y": 1
             },
             "id": 1,
-            "options": {
-              "legend": {
-                "calcs": [],
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": true
-              },
-              "tooltip": {
-                "hideZeros": false,
-                "mode": "single",
-                "sort": "none"
-              }
-            },
             "targets": [
               {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "DS_PROMETHEUS"
-                },
-                "disableTextWrap": false,
-                "editorMode": "code",
                 "expr": "sum(rate(catalog_http_requests_total[5m]))",
-                "fullMetaSearch": false,
-                "includeNullMetadata": true,
-                "legendFormat": "Total RPS",
-                "range": true,
-                "refId": "A",
-                "useBackend": false
+                "legendFormat": "Total RPS"
               }
             ],
             "title": "Request Rate (Total)",
@@ -151,58 +77,8 @@ data:
             },
             "fieldConfig": {
               "defaults": {
-                "color": {
-                  "mode": "palette-classic"
-                },
-                "custom": {
-                  "axisBorderShow": false,
-                  "axisCenteredZero": false,
-                  "axisColorMode": "text",
-                  "axisLabel": "",
-                  "axisPlacement": "auto",
-                  "barAlignment": 0,
-                  "barWidthFactor": 0.6,
-                  "drawStyle": "line",
-                  "fillOpacity": 0,
-                  "gradientMode": "none",
-                  "hideFrom": {
-                    "legend": false,
-                    "tooltip": false,
-                    "viz": false
-                  },
-                  "insertNulls": false,
-                  "lineInterpolation": "linear",
-                  "lineWidth": 1,
-                  "pointSize": 5,
-                  "scaleDistribution": {
-                    "type": "linear"
-                  },
-                  "showPoints": "auto",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  },
-                  "thresholdsStyle": {
-                    "mode": "off"
-                  }
-                },
-                "mappings": [],
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green"
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                },
                 "unit": "percent"
-              },
-              "overrides": []
+              }
             },
             "gridPos": {
               "h": 8,
@@ -211,34 +87,10 @@ data:
               "y": 1
             },
             "id": 2,
-            "options": {
-              "legend": {
-                "calcs": [],
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": true
-              },
-              "tooltip": {
-                "hideZeros": false,
-                "mode": "single",
-                "sort": "none"
-              }
-            },
             "targets": [
               {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "DS_PROMETHEUS"
-                },
-                "disableTextWrap": false,
-                "editorMode": "code",
                 "expr": "(\n  sum(rate(catalog_http_requests_total{status_code=~\"4..|5..\"}[5m]))\n  /\n  sum(rate(catalog_http_requests_total[5m]))\n) * 100",
-                "fullMetaSearch": false,
-                "includeNullMetadata": true,
-                "legendFormat": "Error Rate %",
-                "range": true,
-                "refId": "A",
-                "useBackend": false
+                "legendFormat": "Error Rate %"
               }
             ],
             "title": "Error Rate",
@@ -251,58 +103,8 @@ data:
             },
             "fieldConfig": {
               "defaults": {
-                "color": {
-                  "mode": "palette-classic"
-                },
-                "custom": {
-                  "axisBorderShow": false,
-                  "axisCenteredZero": false,
-                  "axisColorMode": "text",
-                  "axisLabel": "",
-                  "axisPlacement": "auto",
-                  "barAlignment": 0,
-                  "barWidthFactor": 0.6,
-                  "drawStyle": "line",
-                  "fillOpacity": 0,
-                  "gradientMode": "none",
-                  "hideFrom": {
-                    "legend": false,
-                    "tooltip": false,
-                    "viz": false
-                  },
-                  "insertNulls": false,
-                  "lineInterpolation": "linear",
-                  "lineWidth": 1,
-                  "pointSize": 5,
-                  "scaleDistribution": {
-                    "type": "linear"
-                  },
-                  "showPoints": "auto",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  },
-                  "thresholdsStyle": {
-                    "mode": "off"
-                  }
-                },
-                "mappings": [],
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green"
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                },
                 "unit": "s"
-              },
-              "overrides": []
+              }
             },
             "gridPos": {
               "h": 8,
@@ -311,64 +113,18 @@ data:
               "y": 9
             },
             "id": 3,
-            "options": {
-              "legend": {
-                "calcs": [],
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": true
-              },
-              "tooltip": {
-                "hideZeros": false,
-                "mode": "single",
-                "sort": "none"
-              }
-            },
             "targets": [
               {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "DS_PROMETHEUS"
-                },
-                "disableTextWrap": false,
-                "editorMode": "code",
                 "expr": "histogram_quantile(0.50, sum(rate(catalog_http_request_duration_seconds_bucket[5m])) by (le))",
-                "fullMetaSearch": false,
-                "includeNullMetadata": true,
-                "legendFormat": "50th percentile",
-                "range": true,
-                "refId": "A",
-                "useBackend": false
+                "legendFormat": "50th percentile"
               },
               {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "DS_PROMETHEUS"
-                },
-                "disableTextWrap": false,
-                "editorMode": "code",
                 "expr": "histogram_quantile(0.95, sum(rate(catalog_http_request_duration_seconds_bucket[5m])) by (le))",
-                "fullMetaSearch": false,
-                "includeNullMetadata": true,
-                "legendFormat": "95th percentile",
-                "range": true,
-                "refId": "B",
-                "useBackend": false
+                "legendFormat": "95th percentile"
               },
               {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "DS_PROMETHEUS"
-                },
-                "disableTextWrap": false,
-                "editorMode": "code",
                 "expr": "histogram_quantile(0.99, sum(rate(catalog_http_request_duration_seconds_bucket[5m])) by (le))",
-                "fullMetaSearch": false,
-                "includeNullMetadata": true,
-                "legendFormat": "99th percentile",
-                "range": true,
-                "refId": "C",
-                "useBackend": false
+                "legendFormat": "99th percentile"
               }
             ],
             "title": "Response Time Percentiles",
@@ -376,63 +132,8 @@ data:
           },
           {
             "datasource": {
-              "type": "prometheus",
-              "uid": "DS_PROMETHEUS"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "color": {
-                  "mode": "palette-classic"
-                },
-                "custom": {
-                  "axisBorderShow": false,
-                  "axisCenteredZero": false,
-                  "axisColorMode": "text",
-                  "axisLabel": "",
-                  "axisPlacement": "auto",
-                  "barAlignment": 0,
-                  "barWidthFactor": 0.6,
-                  "drawStyle": "line",
-                  "fillOpacity": 0,
-                  "gradientMode": "none",
-                  "hideFrom": {
-                    "legend": false,
-                    "tooltip": false,
-                    "viz": false
-                  },
-                  "insertNulls": false,
-                  "lineInterpolation": "linear",
-                  "lineWidth": 1,
-                  "pointSize": 5,
-                  "scaleDistribution": {
-                    "type": "linear"
-                  },
-                  "showPoints": "auto",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  },
-                  "thresholdsStyle": {
-                    "mode": "off"
-                  }
-                },
-                "mappings": [],
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green"
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                },
-                "unit": "short"
-              },
-              "overrides": []
+              "type": "tempo",
+              "uid": "DS_TEMPO"
             },
             "gridPos": {
               "h": 8,
@@ -441,38 +142,14 @@ data:
               "y": 9
             },
             "id": 4,
-            "options": {
-              "legend": {
-                "calcs": [],
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": true
-              },
-              "tooltip": {
-                "hideZeros": false,
-                "mode": "single",
-                "sort": "none"
-              }
-            },
             "targets": [
               {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "DS_PROMETHEUS"
-                },
-                "disableTextWrap": false,
-                "editorMode": "code",
-                "expr": "catalog_http_requests_in_flight",
-                "fullMetaSearch": false,
-                "includeNullMetadata": true,
-                "legendFormat": "In-Flight Requests",
-                "range": true,
-                "refId": "A",
-                "useBackend": false
+                "query": "{service.name=\"catalog-service\"}",
+                "queryType": ""
               }
             ],
-            "title": "In-Flight Requests",
-            "type": "timeseries"
+            "title": "Recent Traces",
+            "type": "traces"
           },
           {
             "datasource": {
@@ -481,58 +158,8 @@ data:
             },
             "fieldConfig": {
               "defaults": {
-                "color": {
-                  "mode": "palette-classic"
-                },
-                "custom": {
-                  "axisBorderShow": false,
-                  "axisCenteredZero": false,
-                  "axisColorMode": "text",
-                  "axisLabel": "",
-                  "axisPlacement": "auto",
-                  "barAlignment": 0,
-                  "barWidthFactor": 0.6,
-                  "drawStyle": "line",
-                  "fillOpacity": 0,
-                  "gradientMode": "none",
-                  "hideFrom": {
-                    "legend": false,
-                    "tooltip": false,
-                    "viz": false
-                  },
-                  "insertNulls": false,
-                  "lineInterpolation": "linear",
-                  "lineWidth": 1,
-                  "pointSize": 5,
-                  "scaleDistribution": {
-                    "type": "linear"
-                  },
-                  "showPoints": "auto",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  },
-                  "thresholdsStyle": {
-                    "mode": "off"
-                  }
-                },
-                "mappings": [],
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green"
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                },
                 "unit": "reqps"
-              },
-              "overrides": []
+              }
             },
             "gridPos": {
               "h": 8,
@@ -541,34 +168,10 @@ data:
               "y": 17
             },
             "id": 5,
-            "options": {
-              "legend": {
-                "calcs": [],
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": true
-              },
-              "tooltip": {
-                "hideZeros": false,
-                "mode": "single",
-                "sort": "none"
-              }
-            },
             "targets": [
               {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "DS_PROMETHEUS"
-                },
-                "disableTextWrap": false,
-                "editorMode": "code",
                 "expr": "sum(rate(catalog_http_requests_total[5m])) by (path)",
-                "fullMetaSearch": false,
-                "includeNullMetadata": true,
-                "legendFormat": "{{path}}",
-                "range": true,
-                "refId": "A",
-                "useBackend": false
+                "legendFormat": "{{path}}"
               }
             ],
             "title": "Request Rate by Endpoint",
@@ -581,58 +184,8 @@ data:
             },
             "fieldConfig": {
               "defaults": {
-                "color": {
-                  "mode": "palette-classic"
-                },
-                "custom": {
-                  "axisBorderShow": false,
-                  "axisCenteredZero": false,
-                  "axisColorMode": "text",
-                  "axisLabel": "",
-                  "axisPlacement": "auto",
-                  "barAlignment": 0,
-                  "barWidthFactor": 0.6,
-                  "drawStyle": "line",
-                  "fillOpacity": 0,
-                  "gradientMode": "none",
-                  "hideFrom": {
-                    "legend": false,
-                    "tooltip": false,
-                    "viz": false
-                  },
-                  "insertNulls": false,
-                  "lineInterpolation": "linear",
-                  "lineWidth": 1,
-                  "pointSize": 5,
-                  "scaleDistribution": {
-                    "type": "linear"
-                  },
-                  "showPoints": "auto",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  },
-                  "thresholdsStyle": {
-                    "mode": "off"
-                  }
-                },
-                "mappings": [],
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green"
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
-                    }
-                  ]
-                },
-                "unit": "reqps"
-              },
-              "overrides": []
+                "unit": "short"
+              }
             },
             "gridPos": {
               "h": 8,
@@ -641,53 +194,22 @@ data:
               "y": 17
             },
             "id": 7,
-            "options": {
-              "legend": {
-                "calcs": [],
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": true
-              },
-              "tooltip": {
-                "hideZeros": false,
-                "mode": "single",
-                "sort": "none"
-              }
-            },
             "targets": [
               {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "DS_PROMETHEUS"
-                },
-                "disableTextWrap": false,
-                "editorMode": "code",
-                "expr": "sum(rate(catalog_http_requests_total[5m])) by (status_code)",
-                "fullMetaSearch": false,
-                "includeNullMetadata": true,
-                "legendFormat": "{{status_code}}",
-                "range": true,
-                "refId": "A",
-                "useBackend": false
+                "expr": "catalog_http_requests_in_flight",
+                "legendFormat": "In-Flight Requests"
               }
             ],
-            "title": "Request Rate by Status Code",
+            "title": "In-Flight Requests",
             "type": "timeseries"
           }
         ],
-        "preload": false,
-        "schemaVersion": 41,
-        "tags": ["catalog", "microservice", "http"],
-        "templating": {
-          "list": []
-        },
+        "tags": ["catalog", "microservice", "http", "traces"],
         "time": {
           "from": "now-30m",
           "to": "now"
         },
-        "timepicker": {},
-        "timezone": "browser",
-        "title": "Catalog Service - HTTP Metrics",
-        "uid": "catalog-service-http",
+        "title": "Catalog Service - Observability",
+        "uid": "catalog-service-observability",
         "version": 1
     } 

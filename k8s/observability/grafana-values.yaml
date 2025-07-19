@@ -17,8 +17,20 @@ datasources:
         access: proxy
       - name: DS_TEMPO
         type: tempo
-        url: http://tempo:3200 # K8s DNS name for the Tempo service
+        url: http://tempo.monitoring.svc.cluster.local:3200 # K8s DNS name for the Tempo service
         access: proxy
+        jsonData:
+          httpMethod: GET
+          tracesToLogsV2:
+            datasourceUid: 'DS_LOKI'
+            filterByTraceID: true
+            filterBySpanID: false
+            tags: ['job', 'instance', 'pod', 'namespace']
+          tracesToMetrics:
+            datasourceUid: 'DS_PROMETHEUS'
+            tags: [{ key: 'service.name', value: 'service' }, { key: 'service.namespace', value: 'namespace' }]
+          serviceMap:
+            datasourceUid: 'DS_PROMETHEUS'
 
 dashboardProviders:
   dashboardproviders.yaml:

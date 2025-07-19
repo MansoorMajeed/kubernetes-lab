@@ -32,6 +32,7 @@ spec:
         - containerPort: 8080
           name: http
         env:
+        # Application configuration
         - name: PORT
           value: "8080"
         - name: DB_HOST
@@ -44,6 +45,15 @@ spec:
           value: "catalog_user"
         - name: DB_PASSWORD
           value: "catalog_pass"
+        # OpenTelemetry configuration
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "alloy-otlp.monitoring.svc.cluster.local:4318"
+        - name: OTEL_SERVICE_NAME
+          value: "catalog-service"
+        - name: OTEL_SERVICE_VERSION
+          value: "1.0.0"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "deployment.environment=development,service.namespace=catalog"
         livenessProbe:
           httpGet:
             path: /health
