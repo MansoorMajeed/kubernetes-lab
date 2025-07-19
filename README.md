@@ -1,12 +1,25 @@
 # Kubernetes Observability Lab
 
+Note: This is a work in progress
+
 **Production-like observability stack in 5 minutes, locally, completely free** ⚡
 
-Learn cloud-native observability the way you'd implement it in production - with a complete Kubernetes stack running locally using k3d + Tilt. No cloud accounts, no costs, no complexity.
+I made this as a way to learn Kubernetes + Microservices + observability in a modern production environment. Main motivation was to have
+everything run locally so that you don't need spend money on cloud accounts (especially if you are a student or looking for your first job).
+I decided to go with Tilt + k3d to setup a local kubernetes environment
 
-Perfect for **DevOps engineers**, **SREs**, and **developers** who want hands-on experience with modern observability patterns.
+Additionally, I wanted to have this local infrastructure mimic a real world setup, so I am building an e-commerce platform locally called "LocalMart".
+For now it has only one backned service (catalog service), but the idea is to have more microservices and show the interaction between them, have logs, metrics and traces etc.
 
----
+I think this is especially useful for those who have not managed any production environments to get an idea of how things might look.
+
+I think this would be helpful for new DevOps engineers, SREs and developers. It might be helpful for some experienced folks as well.
+
+Making all of these manually is going to take a ton of time, but luckily, I was able to use generative AI (Cursor + Claude + Gemin 2.5 pro) for brainstorming, writing docs, writing boilerplate code etc and this sped things up significantly (check the section on AI usage at the bottom to read about my  learnings)
+
+I have organized this repo into different "phases", take a look at the [Release page](https://github.com/MansoorMajeed/kubernetes-lab/releases) to get an idea. You can switch any of the tags and focus only on that phase, if you would like
+
+If you have any questions, you can open an issue in this repo. 
 
 ## ⚡ Quick Start (Returning Users)
 
