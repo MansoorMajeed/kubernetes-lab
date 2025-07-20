@@ -20,6 +20,7 @@ When I need detailed information, I should read these files:
 | **Setup Instructions** | `README.md` | `#detailed-setup` section |
 | **Architecture Diagrams** | `README.md` | `#architecture` section |
 | **Traffic Simulation** | `scripts/README.md` | Traffic generation patterns |
+| **Documentation Sync** | `scripts/WORKFLOW.md` | End-of-session doc update workflow |
 
 ## ⚠️ Critical Safety Rules
 
@@ -29,6 +30,7 @@ When I need detailed information, I should read these files:
 - ✅ Verify dependency versions with official docs (`go get`, `helm repo add`)
 - ✅ Test Kubernetes manifests in isolation before adding to Tiltfile
 - ✅ All configurations are LOCAL ONLY - never apply to production clusters
+- ✅ Run `./scripts/sync-docs.sh` at end of sessions to keep docs synchronized
 
 ## 🤖 AI Collaboration Guidelines
 
@@ -43,6 +45,11 @@ When I need detailed information, I should read these files:
 - OpenTelemetry endpoint configurations  
 - Service discovery and networking configs
 - Integration between observability components
+
+**End-of-session workflow:**
+- Run `./scripts/sync-docs.sh analyze --since-tag` to identify what docs need updates
+- Update only the specific sections mentioned (token-efficient)
+- Validate with `./scripts/sync-docs.sh validate`
 
 ## 🛠️ Development Decision Tree
 
