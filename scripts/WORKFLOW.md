@@ -28,7 +28,24 @@ Keep documentation synchronized with code changes in a token-efficient way. This
 - Maps changes to specific documentation sections  
 - Suggests exactly which docs need updates (no guessing!)
 
-### 2. Update Suggested Documentation
+### 2. Comprehensive State Audit (New!)
+```bash
+# Audit current codebase vs documentation (regardless of recent changes)
+./scripts/sync-docs.sh audit
+
+# Audit with specific fix suggestions
+./scripts/sync-docs.sh audit --suggest-fixes
+```
+
+**What it does:**
+- Scans current codebase state comprehensively
+- Identifies missing documentation for existing features
+- Finds outdated documentation for removed features
+- Checks API documentation alignment with actual endpoints
+- Validates observability stack documentation completeness
+- **No git diff required** - examines current state
+
+### 3. Update Suggested Documentation
 The script will output targeted suggestions like:
 ```
 🔧 Service code changed → Check services/catalog/README.md#api-reference
@@ -38,7 +55,7 @@ The script will output targeted suggestions like:
 
 **Token-efficient approach:** Only read and update the specific sections mentioned.
 
-### 3. Validate Documentation Structure
+### 4. Validate Documentation Structure
 ```bash
 # Quick validation (doesn't read everything, just checks structure)
 ./scripts/sync-docs.sh validate
@@ -49,7 +66,7 @@ The script will output targeted suggestions like:
 - .cursorrules pointers are valid
 - Basic functional test (if services are running)
 
-### 4. Full Analysis (Optional)
+### 5. Full Analysis (Optional)
 ```bash
 # Run both analyze and validate in one command
 ./scripts/sync-docs.sh full
@@ -124,7 +141,7 @@ When user asks "Is documentation up to date?":
 ## 🎯 Example Session End
 
 ```bash
-# 1. What changed?
+# 1. What changed since last work?
 ./scripts/sync-docs.sh analyze --since-tag
 
 # Output:
@@ -137,6 +154,44 @@ When user asks "Is documentation up to date?":
 ./scripts/sync-docs.sh validate
 
 # 4. Commit with confidence that docs are synchronized
+```
+
+## 🔄 When to Use Each Mode
+
+### **📊 Use `analyze`** (Change-based)
+- **End of development sessions** - see what docs need updating based on your changes
+- **Before git commits** - ensure your changes are documented
+- **After feature branches** - sync docs with code changes
+- **Token-efficient** - only focuses on what you modified
+
+### **🔍 Use `audit`** (State-based) 
+- **New team member joins** - comprehensive check of documentation completeness
+- **After major refactoring** - ensure docs still match reality
+- **Periodic maintenance** - quarterly documentation health check
+- **Before releases** - comprehensive validation
+- **Inheriting a project** - understand what documentation gaps exist
+
+### **⚡ Use `validate`** (Quick check)
+- **Before presentations** - ensure basic structure is intact
+- **CI/CD pipeline** - quick automated check
+- **Fast sanity check** - just structure validation
+
+## 🎯 Advanced Example: New Team Member
+
+```bash
+# Comprehensive audit to understand project state
+./scripts/sync-docs.sh audit --suggest-fixes
+
+# Output:
+# 📄 Missing: services/user/README.md
+# 📊 services/catalog/README.md missing observability documentation  
+# 🔌 payment has HTTP handlers but lacks API documentation
+# 
+# Suggested Fixes:
+# 📄 Create services/user/README.md using services/catalog/README.md as template
+# 📊 Update README.md observability section to document all components
+
+# Now you know exactly what documentation work is needed!
 ```
 
 ## 💡 Benefits

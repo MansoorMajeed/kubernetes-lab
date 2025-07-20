@@ -192,6 +192,181 @@ validate_setup() {
     return $validation_errors
 }
 
+# Comprehensive audit of current state (not based on changes)
+audit_current_state() {
+    print_section "Comprehensive Documentation Audit"
+    
+    local audit_issues=()
+    local missing_docs=()
+    local outdated_docs=()
+    
+    # 1. Scan for services that should have documentation
+    print_action "Scanning for services..."
+    if [ -d "services" ]; then
+        for service_dir in services/*/; do
+            if [ -d "$service_dir" ]; then
+                local service_name=$(basename "$service_dir")
+                if [ ! -f "$service_dir/README.md" ]; then
+                    missing_docs+=("📄 Missing: $service_dir/README.md")
+                else
+                    # Check if service README has required sections
+                    if ! grep -q "API" "$service_dir/README.md"; then
+                        outdated_docs+=("📝 $service_dir/README.md missing API documentation")
+                    fi
+                    if [ -d "$service_dir/internal" ] && ! grep -q -i "observability\|tracing\|metrics" "$service_dir/README.md"; then
+                        outdated_docs+=("📊 $service_dir/README.md missing observability documentation")
+                    fi
+                fi
+            fi
+        done
+    fi
+    
+    # 2. Check if documented services still exist
+    print_action "Checking documented services exist..."
+    if [ -f "README.md" ]; then
+        # Look for service references in main README
+        while IFS= read -r line; do
+            if [[ "$line" =~ services/([^/]+)/ ]]; then
+                local referenced_service="${BASH_REMATCH[1]}"
+                if [ ! -d "services/$referenced_service" ]; then
+                    outdated_docs+=("🗑️  README.md references non-existent service: $referenced_service")
+                fi
+            fi
+        done < README.md
+    fi
+    
+    # 3. Check Kubernetes manifests vs documentation
+    print_action "Checking Kubernetes documentation alignment..."
+    local k8s_apps=$(find k8s/apps -maxdepth 1 -type d ! -name apps 2>/dev/null | wc -l)
+    local documented_services=0
+    if [ -f "README.md" ] && grep -q "Architecture" README.md; then
+        # Count service references in architecture section
+        documented_services=$(grep -A 20 -i "architecture" README.md | grep -c "Service" || echo "0")
+    fi
+    
+    if [ "$k8s_apps" -gt 0 ] && [ "$documented_services" -eq 0 ]; then
+        outdated_docs+=("🏗️  K8s apps exist but no services documented in README.md architecture")
+    fi
+    
+    # 4. Check observability stack documentation
+    print_action "Checking observability documentation..."
+    local observability_components=()
+    if [ -d "k8s/observability" ]; then
+        # Check what's actually deployed
+        for file in k8s/observability/*values.yaml; do
+            if [ -f "$file" ]; then
+                local component=$(basename "$file" | sed 's/-values.yaml//')
+                observability_components+=("$component")
+            fi
+        done
+        
+        # Check if README documents these components
+        for component in "${observability_components[@]}"; do
+            if [ -f "README.md" ] && ! grep -q -i "$component" README.md; then
+                outdated_docs+=("📊 README.md missing documentation for $component observability component")
+            fi
+        done
+    fi
+    
+    # 5. Check scripts documentation
+    print_action "Checking scripts documentation..."
+    if [ -d "scripts" ]; then
+        for script in scripts/*.sh; do
+            if [ -f "$script" ] && [ ! -f "scripts/README.md" ]; then
+                missing_docs+=("📜 Missing: scripts/README.md for script documentation")
+                break
+            fi
+        done
+    fi
+    
+    # 6. Check for undocumented environment variables/configuration
+    print_action "Checking configuration documentation..."
+    if find . -name "*.yaml" -path "*/k8s/*" -exec grep -l "env:" {} \; | head -1 >/dev/null 2>&1; then
+        if [ -f "README.md" ] && ! grep -q -i "environment\|configuration\|host.*configuration" README.md; then
+            outdated_docs+=("⚙️  K8s manifests have environment configs but README.md lacks configuration section")
+        fi
+    fi
+    
+    # 7. Check API endpoints vs documentation
+    print_action "Checking API documentation alignment..."
+    for service_dir in services/*/; do
+        if [ -d "$service_dir" ]; then
+            local service_name=$(basename "$service_dir")
+            # Look for HTTP handlers
+            if find "$service_dir" -name "*.go" -exec grep -l "router\|http\|Handler" {} \; | head -1 >/dev/null 2>&1; then
+                if [ ! -f "$service_dir/README.md" ] || ! grep -q -i "api\|endpoint\|curl" "$service_dir/README.md"; then
+                    outdated_docs+=("🔌 $service_name has HTTP handlers but lacks API documentation")
+                fi
+            fi
+        fi
+    done
+    
+    # Print results
+    print_section "Audit Results"
+    
+    if [ ${#missing_docs[@]} -eq 0 ] && [ ${#outdated_docs[@]} -eq 0 ]; then
+        print_success "Documentation appears comprehensive and up-to-date!"
+        return 0
+    fi
+    
+    if [ ${#missing_docs[@]} -gt 0 ]; then
+        echo -e "\n${RED}Missing Documentation:${NC}"
+        for item in "${missing_docs[@]}"; do
+            echo "  $item"
+        done
+    fi
+    
+    if [ ${#outdated_docs[@]} -gt 0 ]; then
+        echo -e "\n${YELLOW}Potentially Outdated/Incomplete Documentation:${NC}"
+        for item in "${outdated_docs[@]}"; do
+            echo "  $item"
+        done
+    fi
+    
+    print_action "Run with specific suggestions: ./scripts/sync-docs.sh audit --suggest-fixes"
+    
+    return 1
+}
+
+# Provide specific fix suggestions for audit issues
+suggest_audit_fixes() {
+    print_section "Suggested Fixes"
+    
+    # Re-run audit logic but with fix suggestions
+    print_action "Based on audit findings, consider these actions:"
+    
+    # Check for missing service READMEs
+    if [ -d "services" ]; then
+        for service_dir in services/*/; do
+            if [ -d "$service_dir" ] && [ ! -f "$service_dir/README.md" ]; then
+                local service_name=$(basename "$service_dir")
+                echo "  📄 Create $service_dir/README.md using services/catalog/README.md as template"
+            fi
+        done
+    fi
+    
+    # Check main README completeness
+    if [ -f "README.md" ]; then
+        if ! grep -q -i "architecture.*diagram" README.md; then
+            echo "  🏗️  Add architecture diagram to README.md (use Mermaid syntax)"
+        fi
+        if ! grep -q -i "host.*configuration\|etc/hosts" README.md; then
+            echo "  🌐 Add host configuration section to README.md"
+        fi
+    fi
+    
+    # Check observability documentation
+    if [ -d "k8s/observability" ] && [ -f "README.md" ]; then
+        local components=$(find k8s/observability -name "*values.yaml" | wc -l)
+        local documented=$(grep -c -i "prometheus\|grafana\|loki\|tempo" README.md || echo "0")
+        if [ "$components" -gt "$documented" ]; then
+            echo "  📊 Update README.md observability section to document all components"
+        fi
+    fi
+    
+    print_action "For detailed guidance, see scripts/WORKFLOW.md"
+}
+
 # Update .cursorrules if new patterns detected
 update_cursorrules() {
     local changed_files="$1"
@@ -232,6 +407,8 @@ usage() {
     echo "  analyze [since]     Analyze changes and suggest doc updates"
     echo "                      since: git ref to compare against (default: HEAD~5)"
     echo "  analyze --since-tag Compare against last git tag"
+    echo "  audit               Comprehensive audit of current documentation state"
+    echo "  audit --suggest-fixes  Audit with specific fix suggestions"
     echo "  validate           Quick validation of documentation structure"
     echo "  full               Run both analyze and validate"
     echo ""
@@ -239,6 +416,8 @@ usage() {
     echo "  $0 analyze                    # Check last 5 commits"
     echo "  $0 analyze --since-tag        # Check since last tag"
     echo "  $0 analyze HEAD~10            # Check last 10 commits"
+    echo "  $0 audit                      # Comprehensive state audit"
+    echo "  $0 audit --suggest-fixes      # Audit with fix suggestions"
     echo "  $0 validate                   # Just validate structure"
     echo "  $0 full                       # Full analysis + validation"
 }
@@ -252,6 +431,14 @@ main() {
             local comparison_point=$(get_comparison_point "$2")
             analyze_changes "$comparison_point"
             update_cursorrules "$(git diff --name-only "$comparison_point" 2>/dev/null || git diff --name-only HEAD~1)"
+            ;;
+        "audit")
+            if [ "$2" = "--suggest-fixes" ]; then
+                audit_current_state
+                suggest_audit_fixes
+            else
+                audit_current_state
+            fi
             ;;
         "validate")
             validate_setup
