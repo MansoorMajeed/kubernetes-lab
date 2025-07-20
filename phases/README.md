@@ -17,10 +17,10 @@ This directory contains documentation for each learning phase of the Kubernetes 
 
 ### Phase 2: First Service (v2.x) - Application Observability
 **Goal**: Deploy and monitor a single Go microservice
-- **v2.0.0**: Deploy catalog service with basic Kubernetes resources
-- **v2.1.0**: Implement structured logging with Loki integration
-- **v2.2.0**: Add Prometheus metrics to Go service
-- **v2.3.0**: Add distributed tracing with OpenTelemetry and Grafana Tempo
+- **v2.0.0**: Deploy catalog service with basic Kubernetes resources and structured logging
+- **v2.1.0**: Add Prometheus metrics to Go service
+- **v2.2.0**: Add distributed tracing with OpenTelemetry and Grafana Tempo
+
 
 **Prerequisites**: Phase 1 completed
 **Duration**: 3-4 hours

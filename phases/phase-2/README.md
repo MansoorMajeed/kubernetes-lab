@@ -15,17 +15,20 @@ By the end of this phase, you will:
 
 ## Phase Milestones
 
-### v2.0.0: Basic Service Deployment
+### v2.0.0: Basic Service Deployment with Structured Logging
 - Deploy catalog service with Kubernetes manifests
 - Configure service discovery and ingress
 - Set up PostgreSQL database
 - Implement basic health checks
+- **Structured logging** with logrus (JSON format)
+- Loki integration for log aggregation
 
 ### v2.1.0: Prometheus Metrics
 - Add Prometheus metrics to Go service
-- Custom application metrics (request counts, durations, etc.)
-- Service discovery integration
+- Custom application metrics (request counts, durations, business metrics)
+- Service discovery integration with Prometheus
 - Application-specific Grafana dashboards
+- Metrics middleware for HTTP requests
 
 ### v2.2.0: Distributed Tracing
 - OpenTelemetry integration in Go service
@@ -159,9 +162,9 @@ cat k8s/apps/catalog/deployment.yaml
 3. **Build a custom Grafana dashboard** for the service
 4. **Set up basic alerting** for service availability
 
-### Exercise 4: Distributed Tracing (if implemented)
+### Exercise 4: Distributed Tracing
 1. **Generate some API requests** using curl or browser
-2. **Explore traces in Jaeger** (if deployed)
+2. **Explore traces in Grafana Tempo**
 3. **Correlate traces with logs**
 4. **Analyze request performance**
 
@@ -207,7 +210,7 @@ The catalog service demonstrates:
 - Ensure metrics endpoint is accessible: `curl http://catalog.kubelab.lan:8081/metrics`
 
 **Traces not visible**:
-- Check Jaeger deployment: `./kubectl-lab get pods -n tracing`
+- Check Tempo deployment: `./kubectl-lab get pods -n observability`
 - Verify OpenTelemetry configuration
 - Ensure trace sampling is enabled
 
@@ -239,4 +242,4 @@ After completing Phase 2, you'll be ready for **Phase 3: Microservices**, where 
 
 ---
 
-**Remember**: This phase introduces real application development concepts. Take time to understand both the Kubernetes and Go aspects of the implementation! 
+**Remember**: This phase introduces real application development concepts. Take time to understand both the Kubernetes and Go aspects of the implementation!
