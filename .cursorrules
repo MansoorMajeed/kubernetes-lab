@@ -1,119 +1,89 @@
-# Kubernetes Lab Project Context
+# Kubernetes Observability Lab - Development Guidelines
 
-## Purpose
-- **Learning environment** for Kubernetes, observability, and cloud-native technologies
-- **Self-contained setup** - everything runs locally with k3d
-- **Experimentation friendly** - safe to try different approaches and configurations
-- **Educational focus** - explain concepts and trade-offs, not just solutions
+## 🎯 Project Context (Quick Reference)
+- **LocalMart E-commerce Platform** - Learning environment for cloud-native observability
+- **Current Phase**: 2.3.0 (Complete observability: Prometheus, Grafana, Loki, Tempo + Catalog service)
+- **Target Audience**: DevOps engineers, SREs, developers learning production patterns
+- **Approach**: Production patterns optimized for local learning (not production scale)
 
-## Phased Learning Approach
-- **Progressive complexity** - Each phase builds on previous knowledge
-- **Tagged releases** - Use git tags with semantic versioning for each phase milestone
-- **Automated deployment** - Tilt handles all deployment; learners focus on understanding concepts
-- **Clear documentation** - Each phase has dedicated documentation and learning objectives
-- **Exploration-based learning** - Exercises focus on understanding deployed services, not manual deployment
+## 📚 Documentation Roadmap
 
-### Phase Structure
-- **Phase 1 (v1.x)**: Foundation - Basic k3d, Prometheus, Grafana, Loki, Alloy
-- **Phase 2 (v2.x)**: First Service - Single Go service with basic observability
-- **Phase 3 (v3.x)**: Microservices - Multiple services with inter-service communication
-- **Phase 4 (v4.x)**: Advanced Observability - APM, custom metrics, alerting
+When I need detailed information, I should read these files:
 
-### Release Strategy
-- **Git tags**: Use semantic versioning with descriptive suffixes (e.g., `v1.0.0-monitoring-foundation`)
-- **GitHub releases**: Each tag gets a release with changelog and learning objectives
-- **Documentation**: Each phase has dedicated docs in `phases/` directory
-- **Scripts**: Phase-specific deployment scripts for easy setup
+| **Topic** | **Read This File** | **Specific Section** |
+|-----------|-------------------|---------------------|
+| **Project Overview** | `README.md` | Full introduction and architecture |
+| **Service Implementation Patterns** | `services/catalog/README.md` | Complete reference implementation |
+| **API Testing Examples** | `services/catalog/README.md` | `#testing-examples` section |
+| **Observability Features** | `services/catalog/README.md` | `#observability-features-deep-dive` |
+| **Code Organization** | `services/catalog/README.md` | `#code-organization-guide` |
+| **Setup Instructions** | `README.md` | `#detailed-setup` section |
+| **Architecture Diagrams** | `README.md` | `#architecture` section |
+| **Traffic Simulation** | `scripts/README.md` | Traffic generation patterns |
 
-## Project Structure
-- `k8s/apps/`: Application deployments (nginx-hello-world, etc.)
-- `k8s/observability/`: Monitoring stack (Prometheus, Loki, Grafana, Alloy)
-- `phases/`: Phase-specific documentation and learning guides
-- `./kubectl-lab`: Wrapper script for kubectl commands against local k3d cluster
-- `./start-lab.sh`: Script to start the k3d environment
-- `./tilt-lab`: Wrapper script for Tilt with appropriate kubeconfig
-- `Tiltfile`: Tilt configuration for automated deployment
-- `scripts/manage-phases.sh`: Phase management and git tag utilities
+## ⚠️ Critical Safety Rules
 
-## Technology Stack
-- **Kubernetes**: k3d (Docker-based local cluster)
-- **Monitoring**: Prometheus + Loki + Grafana + Alloy
-- **Package Manager**: Helm charts
-- **Local Development**: Tilt (automated deployment and development)
-- **Learning Management**: Git tags for phase progression
+**ALWAYS follow these rules:**
+- ✅ Use `./kubectl-lab` (never raw `kubectl`) - protects against wrong context
+- ✅ Use `./tilt-lab` (never raw `tilt`) - preconfigured with correct kubeconfig  
+- ✅ Verify dependency versions with official docs (`go get`, `helm repo add`)
+- ✅ Test Kubernetes manifests in isolation before adding to Tiltfile
+- ✅ All configurations are LOCAL ONLY - never apply to production clusters
 
-## Automation vs Learning Philosophy
-- **Tilt automation**: Handles all deployment complexity automatically
-- **Learning focus**: Documentation explains concepts, not manual deployment steps
-- **Phase exploration**: Learners can checkout git tags to see system state at each phase
-- **Hands-on exercises**: Focus on understanding deployed services, not deployment mechanics
-- **Progressive complexity**: Each phase builds on previous knowledge without deployment friction
+## 🤖 AI Collaboration Guidelines
 
-## Key Patterns
-- Use `./kubectl-lab` instead of direct kubectl for cluster operations
-- Observability stack deployed in `monitoring` namespace
-- Alloy uses Kubernetes API approach (not filesystem) for log collection
-- Regular deployments preferred over DaemonSets when possible
-- Services exposed via ingress with domain names (not port-forwarding)
+**What works well:**
+- Documentation and comprehensive code reviews
+- Boilerplate generation (K8s manifests, Go handlers)
+- Architecture analysis and pattern suggestions
+- Debugging complex error logs (especially Kubernetes events)
 
-## Service Access via Ingress
-- **Domain Pattern**: `<service-name>.kubelab.lan:<port>` - All services use this domain format
-- **k3d Port**: Services are accessed via port `8081` (configured in k3d setup)
-- **Examples**:
-  - Catalog Service: `catalog.kubelab.lan:8081`
-  - Shopping Cart Service: `cart.kubelab.lan:8081`
-  - Order Service: `orders.kubelab.lan:8081`
-  - User Service: `users.kubelab.lan:8081`
-- **etc/hosts Setup**: Add entries to `/etc/hosts` for local resolution:
-  ```
-  127.0.0.1 catalog.kubelab.lan
-  127.0.0.1 cart.kubelab.lan
-  127.0.0.1 orders.kubelab.lan
-  127.0.0.1 users.kubelab.lan
-  ```
-- **Ingress Configuration**: Each service has its own ingress resource for domain-based routing
-- **Real-world Simulation**: This mimics how services would be accessed in production environments
+**What needs human verification:**
+- Dependency management and version selection
+- OpenTelemetry endpoint configurations  
+- Service discovery and networking configs
+- Integration between observability components
 
-## Structured Logging Patterns
-- **JSON logging format** - All applications should output structured JSON logs
-- **Standard log fields** - Include timestamp, request details, response codes, performance metrics
-- **ConfigMap approach** - Use ConfigMaps to configure application logging (e.g., nginx-configmap.yaml)
-- **Loki annotations** - Add `loki.grafana.com/scrape: "true"` and `loki.grafana.com/log-format: "json"` to pod templates
-- **Automatic collection** - Alloy automatically discovers and collects logs from all pods with proper labels
-- **Health endpoints** - Include `/health` endpoints for monitoring with `access_log off` to reduce noise
-- **Log levels** - Use appropriate log levels (info, warn, error) for different types of events
+## 🛠️ Development Decision Tree
 
-## ⚠️ SAFETY WARNINGS
-- **ALWAYS use `./kubectl-lab`** - never use raw `kubectl` commands (protects against wrong context)
-- **ALWAYS use `./tilt-lab`** -- which is preconfigured with appropriate kubeconfig
-- **Production protection**: This setup is LOCAL ONLY - never apply these configs to production clusters
-- **Context isolation**: Ensure k3d context is active before any cluster operations
+**User asks about...**
+- **"How do I implement X in a service?"** → Read `services/catalog/` as reference pattern
+- **"How do I test the API?"** → Point to `services/catalog/README.md#testing-examples`
+- **"How does tracing/logging/metrics work?"** → Reference `services/catalog/README.md#observability`
+- **"How do I add a new service?"** → Follow catalog service pattern, update Tiltfile + ingress
+- **"How do I see traces/logs?"** → Direct to Grafana examples in catalog service docs
+- **"What's the architecture?"** → Reference README.md diagrams
+- **Setup issues** → Point to README.md setup section
 
-## Common Commands
-- `./start-lab.sh` - Start the k3d environment
-- `./tilt-lab up` - Deploy all services automatically (main deployment command)
-- `./kubectl-lab get pods -n monitoring` - Check observability stack
-- `./kubectl-lab get nodes` - Verify k3d cluster is running
-- `./kubectl-lab logs -n frontend -l app=nginx-hello-world` - View application logs
-- `./kubectl-lab get ingress -A` - View all ingress resources and their domains
-- `./scripts/manage-phases.sh list-phases` - List available learning phases
-- `./scripts/manage-phases.sh checkout v1.0.0-monitoring-foundation` - Switch to a specific phase
+## 📁 Quick File Reference
 
-## Configuration Files
-- `*-values.yaml`: Helm chart configurations
-- `*.yaml` in k8s/: Kubernetes manifests
-- `*-configmap.yaml`: ConfigMaps for application configurations (logging, etc.)
-- `*-ingress.yaml`: Ingress resources for domain-based routing
-- Use specific namespaces for organization (monitoring, frontend, etc.)
+**Core files to know:**
+- `services/catalog/` - Complete reference implementation
+- `k8s/observability/` - Observability stack configurations  
+- `k8s/apps/catalog/` - Catalog service K8s manifests
+- `Tiltfile` - Automated deployment configuration
+- `scripts/simulate-traffic.sh` - Generate observability data
 
-## Architecture Decisions
-- Alloy: Uses loki.source.kubernetes (API-based) instead of loki.source.file (filesystem-based)
-- Security: Non-root containers when possible
-- Networking: Services communicate via cluster DNS
-- Logging: Structured JSON logs with comprehensive field coverage
-- Monitoring: Prometheus for metrics, Loki for logs, Grafana for visualization
-- Access: Ingress-based domain routing instead of port-forwarding
+**Common commands:**
+- `./start-lab.sh` - Initialize environment
+- `./tilt-lab up` - Deploy everything
+- `./kubectl-lab get pods -A` - Check all services
+- `./scripts/simulate-traffic.sh` - Generate test data
 
-## Tiltfile Management
-- ConfigMaps must be added to Tiltfile before their dependent deployments
-- Use `helm_resource` for complex charts, `k8s_yaml` for simple manifests
+## 🎯 Key Patterns to Follow
+
+**When adding new services:**
+1. Follow `services/catalog/` structure and patterns
+2. Include observability from day one (tracing, logging, metrics)
+3. Use clean architecture (handlers → models → database)
+4. Implement comprehensive testing examples
+5. Create service-specific README with API docs
+
+**Response format consistency:**
+- API responses: `{"data": {...}, "page": 1, "count": 25}` 
+- Health endpoints: `{"data": {"status": "healthy", "database": "connected"}}`
+- Error responses: Include request correlation
+
+---
+
+**For comprehensive information, always read the actual documentation files listed above rather than trying to recall everything from this context.**
