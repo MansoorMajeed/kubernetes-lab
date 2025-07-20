@@ -8,8 +8,9 @@ The Catalog Service is a **product catalog API** that manages an inventory of pr
 
 ### Key Features
 - 🛍️ **Product Management**: Complete REST API for product operations
+- 🔍 **Advanced Analysis**: Rich tracing demonstration endpoint with multiple spans
 - 📊 **Full Observability**: Traces, logs, and metrics integrated
-- 🔍 **Distributed Tracing**: HTTP requests → Database queries with OpenTelemetry
+- 🌐 **Distributed Tracing**: HTTP requests → Database queries with OpenTelemetry
 - 📝 **Structured Logging**: JSON logs with trace correlation
 - 📈 **Prometheus Metrics**: Request rates, latency, error rates
 - 🏥 **Health Checks**: Database connectivity monitoring
@@ -51,7 +52,8 @@ services/catalog/
 ├── internal/               # 📦 Internal packages
 │   ├── server/            # 🌐 HTTP server & middleware
 │   ├── handlers/          # 🎯 Request handlers (API endpoints)
-│   ├── models/            # 💼 Business logic & data access
+│   ├── services/          # 🧠 Business logic & analysis operations
+│   ├── models/            # 💾 Data access & CRUD operations
 │   ├── db/                # 🗄️ Database connection & schema
 │   ├── metrics/           # 📊 Prometheus metrics
 │   ├── tracing/           # 🔍 OpenTelemetry setup
@@ -67,8 +69,9 @@ services/catalog/
 | 🚪 **Application startup** | `main.go` | Entry point, initialization order |
 | 🌐 **HTTP routing & middleware** | `internal/server/` | `server.go` - middleware stack |
 | 🎯 **API endpoints** | `internal/handlers/` | `products.go`, `health.go` |
-| 💼 **Business logic** | `internal/models/` | `product.go` - CRUD operations |
-| 🗄️ **Database operations** | `internal/db/` | `connection.go` - DB setup |
+| 🧠 **Business logic & analysis** | `internal/services/` | `analysis.go` - complex operations |
+| 💾 **Data access & CRUD** | `internal/models/` | `product.go` - database operations |
+| 🗄️ **Database setup** | `internal/db/` | `connection.go` - DB configuration |
 | 🔍 **Tracing implementation** | `internal/tracing/` | `tracing.go` - OpenTelemetry config |
 | 📊 **Metrics collection** | `internal/metrics/` | `metrics.go` - Prometheus metrics |
 | 📝 **Logging setup** | `internal/logger/` | `logger.go` - Structured logging |
@@ -81,16 +84,33 @@ services/catalog/
 **What to explore**:
 - `internal/tracing/tracing.go` - OTLP exporter configuration
 - `internal/server/server.go:52` - Automatic HTTP tracing with `otelgin`
-- `internal/models/product.go` - Manual database span creation
+- `internal/services/analysis.go` - Complex multi-span operations
+- `internal/models/product.go` - Database span creation
+
+**Rich Tracing with the Analyze Endpoint**:
+
+The `/api/v1/products/analyze` endpoint demonstrates comprehensive distributed tracing:
+
+![Analyze Endpoint Trace](../../img/analyze-trace-screenshot.png)
 
 **Trace hierarchy you'll see**:
 ```
-🌐 GET /api/v1/products/1         [HTTP span]
-  └── 🗄️ db.get_product           [Database span]
-      ├── 📝 product.id=1
-      ├── 📝 db.table=products
-      └── 📝 db.operation=SELECT
+🌐 GET /api/v1/products/analyze     [HTTP span - 1518ms]
+  └── 📊 product.analyze            [Analysis span - 1518ms]
+      ├── 🧮 compute.analysis       [Compute span - 105ms]
+      │   ├── compute.matrix_operations       [52ms]
+      │   ├── compute.statistical_analysis    [31ms]
+      │   └── compute.complexity_scoring      [23ms]
+      ├── 🗄️ database.analysis      [Database span - 85ms]
+      │   ├── db.count_products               [80ms]
+      │   └── db.product_lookup               [120ms] (if ?id= provided)
+      └── 🌐 external.api_call       [HTTP span - 1327ms]
 ```
+
+**Key span attributes**:
+- 🧮 **Compute**: calculations=3000, memory_bytes=8000, complexity_score
+- 🗄️ **Database**: result_count=32, queries_executed=1, avg_latency_ms=85
+- 🌐 **External**: status_code=200, response_time_ms=1327, service=httpbin
 
 ### 📝 Structured Logging
 **Implementation**: JSON logs with trace correlation
@@ -135,6 +155,7 @@ services/catalog/
 ```http
 GET    /api/v1/products          # List products (paginated)
 POST   /api/v1/products          # Create product
+GET    /api/v1/products/analyze  # Analyze products (rich tracing demo)
 GET    /api/v1/products/:id      # Get specific product
 PUT    /api/v1/products/:id      # Update product
 DELETE /api/v1/products/:id      # Delete product
@@ -336,6 +357,35 @@ curl -X DELETE http://catalog.kubelab.lan:8081/api/v1/products/3 | jq
 curl -X DELETE http://catalog.kubelab.lan:8081/api/v1/products/999 | jq
 ```
 
+### 🔍 **ANALYZE Operations (Rich Tracing Demo)**
+
+The analyze endpoint demonstrates complex distributed tracing with multiple spans:
+
+```bash
+# Analyze all products (creates 6+ spans)
+curl -s http://catalog.kubelab.lan:8081/api/v1/products/analyze | jq
+
+# Analyze specific product (creates 7+ spans with product lookup)
+curl -s "http://catalog.kubelab.lan:8081/api/v1/products/analyze?id=1" | jq
+
+# Example response structure:
+curl -s http://catalog.kubelab.lan:8081/api/v1/products/analyze | jq '.data | keys'
+# Expected: ["compute_stats", "database_stats", "external_data", "metadata", "timestamp", "total_duration_ms"]
+```
+
+**What this endpoint demonstrates:**
+- 🧮 **Computation spans**: Matrix operations, statistical analysis, complexity scoring
+- 🗄️ **Database spans**: Product counting, optional product lookup
+- 🌐 **External API spans**: HTTP call to httpbin.org with 1s delay
+- 📊 **Rich span attributes**: Calculations performed, query results, response times
+- 🔗 **Span hierarchy**: Parent-child relationships across service layers
+
+**Perfect for learning:**
+- How business logic creates multiple spans
+- Cross-cutting concerns (compute, database, external calls)
+- Span attributes and metadata
+- Performance bottleneck identification
+
 ### 🚨 Error Scenarios & Validation
 
 Test the API's error handling and validation:
@@ -425,6 +475,10 @@ for i in {1..20}; do
   curl -s http://catalog.kubelab.lan:8081/api/v1/products > /dev/null
   curl -s http://catalog.kubelab.lan:8081/api/v1/products/1 > /dev/null
   
+  # Generate rich traces with analyze endpoint
+  curl -s http://catalog.kubelab.lan:8081/api/v1/products/analyze > /dev/null
+  curl -s "http://catalog.kubelab.lan:8081/api/v1/products/analyze?id=$((i % 5 + 1))" > /dev/null
+  
   # Occasionally create/update products
   if [ $((i % 5)) -eq 0 ]; then
     curl -s -X POST http://catalog.kubelab.lan:8081/api/v1/products \
@@ -438,6 +492,15 @@ for i in {1..20}; do
   
   sleep 2
 done
+```
+
+**Pro tip**: Use the analyze endpoint to create the most interesting traces!
+```bash
+# Create 10 rich traces quickly
+for i in {1..10}; do
+  curl -s "http://catalog.kubelab.lan:8081/api/v1/products/analyze?id=$i" > /dev/null &
+done
+wait
 ```
 
 ### 🎯 Metrics Endpoint
