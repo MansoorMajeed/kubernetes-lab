@@ -147,11 +147,12 @@ func (s *Server) setupRoutes() {
 		// Product routes
 		products := v1.Group("/products")
 		{
-			products.GET("", productHandler.GetProducts)          // GET /api/v1/products
-			products.POST("", productHandler.CreateProduct)       // POST /api/v1/products
-			products.GET("/:id", productHandler.GetProduct)       // GET /api/v1/products/:id
-			products.PUT("/:id", productHandler.UpdateProduct)    // PUT /api/v1/products/:id
-			products.DELETE("/:id", productHandler.DeleteProduct) // DELETE /api/v1/products/:id
+			products.GET("", productHandler.GetProducts)            // GET /api/v1/products
+			products.POST("", productHandler.CreateProduct)         // POST /api/v1/products
+			products.GET("/analyze", productHandler.AnalyzeProduct) // GET /api/v1/products/analyze
+			products.GET("/:id", productHandler.GetProduct)         // GET /api/v1/products/:id
+			products.PUT("/:id", productHandler.UpdateProduct)      // PUT /api/v1/products/:id
+			products.DELETE("/:id", productHandler.DeleteProduct)   // DELETE /api/v1/products/:id
 		}
 	}
 

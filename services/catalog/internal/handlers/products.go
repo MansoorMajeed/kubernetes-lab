@@ -304,3 +304,52 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 		"message": "Product deleted successfully",
 	})
 }
+
+// AnalyzeProduct handles GET /api/v1/products/analyze?id=123
+// This endpoint demonstrates complex distributed tracing with multiple spans
+func (h *ProductHandler) AnalyzeProduct(c *gin.Context) {
+	// Parse optional product ID
+	var productID *int
+	if idStr := c.Query("id"); idStr != "" {
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			logger.WithError(err).WithFields(logrus.Fields{
+				"component": "handler",
+				"action":    "analyze_product",
+				"id_param":  idStr,
+			}).Error("Invalid product ID")
+
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid product ID",
+			})
+			return
+		}
+		productID = &id
+	}
+
+	// Perform complex analysis that creates multiple spans
+	result, err := h.productService.AnalyzeProduct(c, productID)
+	if err != nil {
+		logger.WithError(err).WithFields(logrus.Fields{
+			"component":  "handler",
+			"action":     "analyze_product",
+			"product_id": productID,
+		}).Error("Failed to analyze product")
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to analyze product",
+		})
+		return
+	}
+
+	logger.WithFields(logrus.Fields{
+		"component":  "handler",
+		"action":     "analyze_product",
+		"product_id": productID,
+		"duration":   result.TotalDurationMs,
+	}).Info("Product analysis completed")
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": result,
+	})
+}
