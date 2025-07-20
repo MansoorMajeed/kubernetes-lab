@@ -9,6 +9,7 @@ import (
 	"catalog-service/internal/logger"
 	"catalog-service/internal/metrics"
 	"catalog-service/internal/models"
+	"catalog-service/internal/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -137,9 +138,10 @@ func (s *Server) setupRoutes() {
 	// Metrics endpoint for Prometheus
 	s.router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	// Create product service and handler
+	// Create product service and analysis service
 	productService := models.NewProductService(s.db)
-	productHandler := handlers.NewProductHandler(productService)
+	analysisService := services.NewAnalysisService(productService)
+	productHandler := handlers.NewProductHandler(productService, analysisService)
 
 	// API v1 routes
 	v1 := s.router.Group("/api/v1")
@@ -147,11 +149,12 @@ func (s *Server) setupRoutes() {
 		// Product routes
 		products := v1.Group("/products")
 		{
-			products.GET("", productHandler.GetProducts)          // GET /api/v1/products
-			products.POST("", productHandler.CreateProduct)       // POST /api/v1/products
-			products.GET("/:id", productHandler.GetProduct)       // GET /api/v1/products/:id
-			products.PUT("/:id", productHandler.UpdateProduct)    // PUT /api/v1/products/:id
-			products.DELETE("/:id", productHandler.DeleteProduct) // DELETE /api/v1/products/:id
+			products.GET("", productHandler.GetProducts)            // GET /api/v1/products
+			products.POST("", productHandler.CreateProduct)         // POST /api/v1/products
+			products.GET("/analyze", productHandler.AnalyzeProduct) // GET /api/v1/products/analyze
+			products.GET("/:id", productHandler.GetProduct)         // GET /api/v1/products/:id
+			products.PUT("/:id", productHandler.UpdateProduct)      // PUT /api/v1/products/:id
+			products.DELETE("/:id", productHandler.DeleteProduct)   // DELETE /api/v1/products/:id
 		}
 	}
 

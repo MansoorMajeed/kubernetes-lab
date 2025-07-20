@@ -46,6 +46,13 @@ When I need detailed information, I should read these files:
 - Service discovery and networking configs
 - Integration between observability components
 
+**Learning Environment Priority:**
+- ✅ **ALWAYS prioritize simple, easy-to-understand implementations** for learning purposes
+- ✅ Choose clarity over complexity unless explicitly asked for advanced patterns
+- ✅ Make code readable and educational rather than production-optimized
+- ✅ Add clear comments explaining what each part demonstrates
+- ✅ Use predictable behavior over random/complex logic for easier debugging
+
 **End-of-session workflow:**
 - Run `./scripts/sync-docs.sh analyze --since-tag` to identify what docs need updates
 - Update only the specific sections mentioned (token-efficient)

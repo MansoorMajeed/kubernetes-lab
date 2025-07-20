@@ -1,8 +1,10 @@
 package models
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"catalog-service/internal/logger"
 
@@ -367,4 +369,76 @@ func (p *Product) ToResponse() ProductResponse {
 		Price:       p.Price,
 		StockQty:    p.StockQty,
 	}
+}
+
+// GetProductCount returns the total number of products (helper for analysis)
+func (s *ProductService) GetProductCount(ctx context.Context) (int, error) {
+	tracer := otel.Tracer("catalog-service")
+	dbCtx, span := tracer.Start(ctx, "db.count_products")
+	defer span.End()
+
+	span.SetAttributes(
+		attribute.String("db.operation", "COUNT"),
+		attribute.String("db.table", "products"),
+	)
+
+	// Simple fixed delay to demonstrate span duration
+	time.Sleep(80 * time.Millisecond)
+
+	var count int
+	err := s.db.QueryRowContext(dbCtx, "SELECT COUNT(*) FROM products").Scan(&count)
+	if err != nil {
+		span.RecordError(err)
+		return 0, err
+	}
+
+	span.SetAttributes(
+		attribute.Int("db.result_count", count),
+		attribute.Int64("db.duration_ms", 80),
+	)
+
+	return count, nil
+}
+
+// GetProductByID returns a product by ID (helper for analysis)
+func (s *ProductService) GetProductByID(ctx context.Context, id int) (*Product, error) {
+	tracer := otel.Tracer("catalog-service")
+	dbCtx, span := tracer.Start(ctx, "db.product_lookup")
+	defer span.End()
+
+	span.SetAttributes(
+		attribute.String("db.operation", "SELECT"),
+		attribute.String("db.table", "products"),
+		attribute.Int("db.product_id", id),
+	)
+
+	// Slightly longer delay for specific lookup
+	time.Sleep(120 * time.Millisecond)
+
+	query := `SELECT id, name, description, price, stock_quantity FROM products WHERE id = $1`
+	var product Product
+
+	err := s.db.QueryRowContext(dbCtx, query, id).Scan(
+		&product.ID,
+		&product.Name,
+		&product.Description,
+		&product.Price,
+		&product.StockQty,
+	)
+
+	if err == sql.ErrNoRows {
+		span.SetAttributes(attribute.String("db.result", "not_found"))
+		return nil, fmt.Errorf("product not found")
+	} else if err != nil {
+		span.RecordError(err)
+		return nil, err
+	}
+
+	span.SetAttributes(
+		attribute.String("db.result", "found"),
+		attribute.String("db.product_name", product.Name),
+		attribute.Int64("db.duration_ms", 120),
+	)
+
+	return &product, nil
 }
