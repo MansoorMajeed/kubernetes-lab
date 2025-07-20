@@ -34,7 +34,7 @@ else
 fi
 
 
-# 2. Create a cluster if it doesn't exist
+# 2. Create a cluster if it doesn't exist, or start it if it's stopped
 # 8081:80@loadbalancer  - expose port 80 of the load balancer to port 8081 on the host
 if [ -z "$(k3d cluster list | grep "^${CLUSTER_NAME}[[:space:]]")" ]; then
   echo "Creating k3d cluster '${CLUSTER_NAME}'..."
@@ -45,7 +45,14 @@ if [ -z "$(k3d cluster list | grep "^${CLUSTER_NAME}[[:space:]]")" ]; then
     --kubeconfig-update-default=false \
     --kubeconfig-switch-context=false
 else
-  echo "Cluster '${CLUSTER_NAME}' already exists."
+  # Cluster exists, check if it's running
+  RUNNING_SERVERS=$(k3d cluster list | grep "^${CLUSTER_NAME}[[:space:]]" | awk '{print $2}' | cut -d'/' -f1)
+  if [ "$RUNNING_SERVERS" = "0" ]; then
+    echo "Cluster '${CLUSTER_NAME}' exists but is stopped. Starting it..."
+    k3d cluster start ${CLUSTER_NAME}
+  else
+    echo "Cluster '${CLUSTER_NAME}' already exists and is running."
+  fi
 fi
 
 # Verify cluster creation
