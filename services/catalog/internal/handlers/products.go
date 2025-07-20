@@ -6,6 +6,7 @@ import (
 
 	"catalog-service/internal/logger"
 	"catalog-service/internal/models"
+	"catalog-service/internal/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -13,13 +14,15 @@ import (
 
 // ProductHandler handles product-related HTTP requests
 type ProductHandler struct {
-	productService *models.ProductService
+	productService  *models.ProductService
+	analysisService *services.AnalysisService
 }
 
 // NewProductHandler creates a new product handler
-func NewProductHandler(productService *models.ProductService) *ProductHandler {
+func NewProductHandler(productService *models.ProductService, analysisService *services.AnalysisService) *ProductHandler {
 	return &ProductHandler{
-		productService: productService,
+		productService:  productService,
+		analysisService: analysisService,
 	}
 }
 
@@ -328,7 +331,7 @@ func (h *ProductHandler) AnalyzeProduct(c *gin.Context) {
 	}
 
 	// Perform complex analysis that creates multiple spans
-	result, err := h.productService.AnalyzeProduct(c, productID)
+	result, err := h.analysisService.AnalyzeProduct(c, productID)
 	if err != nil {
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component":  "handler",

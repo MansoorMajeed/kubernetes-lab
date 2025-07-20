@@ -9,6 +9,7 @@ import (
 	"catalog-service/internal/logger"
 	"catalog-service/internal/metrics"
 	"catalog-service/internal/models"
+	"catalog-service/internal/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -137,9 +138,10 @@ func (s *Server) setupRoutes() {
 	// Metrics endpoint for Prometheus
 	s.router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	// Create product service and handler
+	// Create product service and analysis service
 	productService := models.NewProductService(s.db)
-	productHandler := handlers.NewProductHandler(productService)
+	analysisService := services.NewAnalysisService(productService)
+	productHandler := handlers.NewProductHandler(productService, analysisService)
 
 	// API v1 routes
 	v1 := s.router.Group("/api/v1")
