@@ -25,14 +25,29 @@ done
 # Create .kube directory if it doesn't exist
 mkdir -p "$HOME/.kube"
 
-# 1. Create a registry if it doesn't exist
+# 1. Create a registry if it doesn't exist, or start it if it's stopped
 if [ -z "$(k3d registry list | grep "^k3d-${REGISTRY_NAME}[[:space:]]")" ]; then
   echo "Creating local k3d registry '${REGISTRY_NAME}'..."
   k3d registry create ${REGISTRY_NAME} --port ${REGISTRY_PORT}
 else
-  echo "Registry '${REGISTRY_NAME}' already exists."
+  # Registry exists, check if it's running
+  REGISTRY_STATUS=$(k3d registry list | grep "^k3d-${REGISTRY_NAME}[[:space:]]" | awk '{print $3}')
+  if [ "$REGISTRY_STATUS" = "exited" ]; then
+    echo "Registry '${REGISTRY_NAME}' exists but is stopped. Starting it..."
+    docker start k3d-${REGISTRY_NAME}
+  else
+    echo "Registry '${REGISTRY_NAME}' already exists and is running."
+  fi
 fi
 
+# Verify registry is accessible
+echo "Verifying registry accessibility..."
+if curl -s "http://localhost:${REGISTRY_PORT}/v2/" > /dev/null 2>&1; then
+  echo "Registry is accessible at localhost:${REGISTRY_PORT}"
+else
+  echo "Warning: Registry may not be fully ready yet. This might cause Docker push timeouts." >&2
+  echo "If you encounter push timeouts, run: docker start k3d-${REGISTRY_NAME}" >&2
+fi
 
 # 2. Create a cluster if it doesn't exist, or start it if it's stopped
 # 8081:80@loadbalancer  - expose port 80 of the load balancer to port 8081 on the host
