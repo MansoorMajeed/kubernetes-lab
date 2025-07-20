@@ -13,7 +13,7 @@ LAB_KUBECONFIG="$HOME/.kube/config-kubernetes-lab"
 
 
 ### check for all required commands
-for cmd in k3d kubectl tilt docker; do
+for cmd in k3d kubectl tilt docker helm; do
   if ! command -v $cmd &> /dev/null; then
     echo "Error: $cmd is not installed. Please install it before running this script." >&2
     exit 1
