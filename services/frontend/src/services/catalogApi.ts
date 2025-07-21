@@ -1,4 +1,4 @@
-import type { Product, ProductsResponse, ProductResponse } from '../types/api'
+import type { ProductsResponse, ProductResponse } from '../types/api'
 
 // Custom error class for API errors
 export class ApiError extends Error {
