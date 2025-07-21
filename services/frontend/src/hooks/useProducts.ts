@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { catalogApi } from '../services/catalogApi'
-import type { Product } from '../types/api'
 
 // Query keys for React Query cache management
 export const productKeys = {
