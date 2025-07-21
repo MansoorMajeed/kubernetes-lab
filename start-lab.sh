@@ -2,14 +2,132 @@
 
 set -o errexit
 
-
 # Change these to your liking
 CLUSTER_NAME="kubernetes-lab"
 REGISTRY_NAME="kubernetes-lab-registry"
 REGISTRY_PORT="5001"
-# Usinga  dedicated kubeconfig for the lab to prevent conflicts with the default kubeconfig
+# Using a dedicated kubeconfig for the lab to prevent conflicts with the default kubeconfig
 LAB_KUBECONFIG="$HOME/.kube/config-kubernetes-lab"
 
+# Function to display usage
+usage() {
+  echo "Usage: $0 [OPTIONS]"
+  echo ""
+  echo "Options:"
+  echo "  --stop, -s      Stop the lab environment (cluster and registry remain for quick restart)"
+  echo "  --delete, -d    Delete and remove the lab environment completely (cluster, registry, kubeconfig)"
+  echo "  --help, -h      Show this help message"
+  echo ""
+  echo "Without options: Start/create the lab environment"
+}
+
+# Function to stop the lab environment (but keep it for restart)
+stop_lab() {
+  echo "⏸️  Stopping Kubernetes Lab Environment..."
+  echo ""
+  
+  # Stop the cluster (but don't delete it)
+  if k3d cluster list | grep -q "^${CLUSTER_NAME}[[:space:]]"; then
+    RUNNING_SERVERS=$(k3d cluster list | grep "^${CLUSTER_NAME}[[:space:]]" | awk '{print $2}' | cut -d'/' -f1)
+    if [ "$RUNNING_SERVERS" != "0" ]; then
+      echo "Stopping k3d cluster '${CLUSTER_NAME}'..."
+      k3d cluster stop ${CLUSTER_NAME}
+      echo "✅ Cluster '${CLUSTER_NAME}' stopped."
+    else
+      echo "ℹ️  Cluster '${CLUSTER_NAME}' is already stopped."
+    fi
+  else
+    echo "ℹ️  Cluster '${CLUSTER_NAME}' does not exist."
+  fi
+  
+  # Stop the registry (but don't delete it)
+  if k3d registry list | grep -q "^k3d-${REGISTRY_NAME}[[:space:]]"; then
+    REGISTRY_STATUS=$(k3d registry list | grep "^k3d-${REGISTRY_NAME}[[:space:]]" | awk '{print $3}')
+    if [ "$REGISTRY_STATUS" != "exited" ]; then
+      echo "Stopping k3d registry '${REGISTRY_NAME}'..."
+      docker stop k3d-${REGISTRY_NAME}
+      echo "✅ Registry '${REGISTRY_NAME}' stopped."
+    else
+      echo "ℹ️  Registry '${REGISTRY_NAME}' is already stopped."
+    fi
+  else
+    echo "ℹ️  Registry '${REGISTRY_NAME}' does not exist."
+  fi
+  
+  echo ""
+  echo "⏸️  Lab environment stopped!"
+  echo ""
+  echo "To restart the lab environment, run:"
+  echo "  ./start-lab.sh"
+  echo ""
+  echo "To completely remove the lab environment, run:"
+  echo "  ./start-lab.sh --delete"
+  echo ""
+}
+
+# Function to stop and clean up the lab environment
+cleanup_lab() {
+  echo "🧹 Deleting Kubernetes Lab Environment..."
+  echo ""
+  
+  # Stop and delete the cluster
+  if k3d cluster list | grep -q "^${CLUSTER_NAME}[[:space:]]"; then
+    echo "Stopping and deleting k3d cluster '${CLUSTER_NAME}'..."
+    k3d cluster delete ${CLUSTER_NAME}
+    echo "✅ Cluster '${CLUSTER_NAME}' deleted."
+  else
+    echo "ℹ️  Cluster '${CLUSTER_NAME}' does not exist."
+  fi
+  
+  # Stop and delete the registry
+  if k3d registry list | grep -q "^k3d-${REGISTRY_NAME}[[:space:]]"; then
+    echo "Stopping and deleting k3d registry '${REGISTRY_NAME}'..."
+    k3d registry delete ${REGISTRY_NAME}
+    echo "✅ Registry '${REGISTRY_NAME}' deleted."
+  else
+    echo "ℹ️  Registry '${REGISTRY_NAME}' does not exist."
+  fi
+  
+  # Remove the kubeconfig file
+  if [ -f "${LAB_KUBECONFIG}" ]; then
+    echo "Removing lab kubeconfig file..."
+    rm "${LAB_KUBECONFIG}"
+    echo "✅ Kubeconfig file removed: ${LAB_KUBECONFIG}"
+  else
+    echo "ℹ️  Kubeconfig file does not exist: ${LAB_KUBECONFIG}"
+  fi
+  
+  echo ""
+  echo "🗑️  Lab environment completely removed!"
+  echo ""
+  echo "To recreate the lab environment, run:"
+  echo "  ./start-lab.sh"
+  echo ""
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --stop|-s)
+      stop_lab
+      exit 0
+      ;;
+    --delete|-d)
+      cleanup_lab
+      exit 0
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      echo ""
+      usage
+      exit 1
+      ;;
+  esac
+done
 
 
 ### check for all required commands
@@ -111,6 +229,10 @@ echo "📋 To use Tilt with this lab environment:"
 echo "  ./tilt-lab up    # Using wrapper script (recommended)"
 echo "  OR"
 echo "  export KUBECONFIG='${LAB_KUBECONFIG}' && tilt up"
+echo ""
+echo "🛑 To manage the lab environment:"
+echo "  ./start-lab.sh --stop    # Stop (but keep for quick restart)"
+echo "  ./start-lab.sh --delete  # Completely remove everything"
 echo ""
 echo "Your cluster is accessible at: http://localhost:8081"
 echo "Registry is running on: localhost:${REGISTRY_PORT}"
