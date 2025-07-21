@@ -92,3 +92,20 @@ k8s_yaml('k8s/apps/catalog/deployment.yaml')
 k8s_yaml('k8s/apps/catalog/service.yaml')
 k8s_yaml('k8s/apps/catalog/ingress.yaml')
 
+### Frontend Service Setup
+
+# Create frontend namespace
+k8s_yaml('k8s/apps/frontend/namespace.yaml')
+
+# Build frontend Docker image
+docker_build(
+    'frontend:latest',
+    './services/frontend',
+    dockerfile='./services/frontend/Dockerfile'
+)
+
+# Deploy frontend service
+k8s_yaml('k8s/apps/frontend/deployment.yaml')
+k8s_yaml('k8s/apps/frontend/service.yaml')
+k8s_yaml('k8s/apps/frontend/ingress.yaml')
+

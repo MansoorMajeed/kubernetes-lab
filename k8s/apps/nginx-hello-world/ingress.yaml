@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: nginx-hello-world
-  namespace: frontend
+  namespace: demo
   annotations:
     ingress.kubernetes.io/ssl-redirect: "false"
 spec:

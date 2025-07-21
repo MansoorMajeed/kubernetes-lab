@@ -17,6 +17,7 @@ When I need detailed information, I should read these files:
 | **Architecture Planning** | `docs/brainstorm/README.md` | Complete 4-service architecture plan |
 | **Phase Progression** | `phases/README.md` | Iterative development roadmap |
 | **Service Implementation Patterns** | `services/catalog/README.md` | Complete reference implementation |
+| **Frontend Implementation** | `services/frontend/README.md` | React + Tailwind CSS patterns |
 | **API Testing Examples** | `services/catalog/README.md` | `#testing-examples` section |
 | **Observability Features** | `services/catalog/README.md` | `#observability-features-deep-dive` |
 | **Code Organization** | `services/catalog/README.md` | `#code-organization-guide` |
@@ -48,6 +49,12 @@ When I need detailed information, I should read these files:
 - OpenTelemetry endpoint configurations  
 - Service discovery and networking configs
 - Integration between observability components
+
+**Dependency Management Best Practices:**
+- ✅ **Use official scaffolding tools** (npm create, yarn create) to get latest versions
+- ✅ **Provide commands** instead of manually creating package.json files
+- ✅ **Let tooling handle** version management and compatibility
+- ❌ **Never manually write** package.json - versions get outdated quickly
 
 **Learning Environment Priority:**
 - ✅ **ALWAYS prioritize simple, easy-to-understand implementations** for learning purposes
