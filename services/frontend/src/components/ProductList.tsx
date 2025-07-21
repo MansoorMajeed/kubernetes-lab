@@ -1,11 +1,18 @@
+import { useEffect } from 'react'
 import { useProducts } from '../hooks/useProducts'
 import Layout from './layout/Layout'
 import Loading from './ui/Loading'
 import ErrorDisplay from './ui/ErrorDisplay'
 import ProductCard from './ui/ProductCard'
+import { recordPageView } from '../services/metricsApi'
 
 export default function ProductList() {
   const { data, isLoading, error, refetch } = useProducts()
+
+  // Record page view on component mount
+  useEffect(() => {
+    recordPageView('product_list')
+  }, [])
 
   return (
     <Layout title="Products">

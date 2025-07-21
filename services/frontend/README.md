@@ -22,6 +22,8 @@ The LocalMart frontend provides a modern, responsive e-commerce interface built 
 - **React Router**: Declarative routing for SPA
 - **Error Handling**: Graceful API error states
 - **Loading States**: User feedback during API calls
+- **Frontend Observability**: Real User Monitoring with Core Web Vitals
+- **React Query**: Caching and API state management
 
 ## 🏗️ Architecture
 
@@ -30,10 +32,19 @@ The LocalMart frontend provides a modern, responsive e-commerce interface built 
 src/
 ├── components/
 │   ├── ProductList.tsx     # Product grid with API integration
-│   └── ProductDetail.tsx   # Individual product view
-├── App.tsx                 # Router setup and main layout
-├── main.tsx               # React app entry point
-└── index.css              # Tailwind configuration
+│   ├── ProductDetail.tsx   # Individual product view
+│   ├── layout/            # Header, Footer, Layout components
+│   └── ui/                # Reusable UI components + ErrorBoundary
+├── hooks/
+│   └── useProducts.ts     # React Query hooks with metrics
+├── services/
+│   ├── catalogApi.ts      # API service layer
+│   └── metricsApi.ts      # Frontend metrics collection
+├── types/
+│   └── api.ts            # TypeScript type definitions
+├── App.tsx               # Router setup with Query Provider
+├── main.tsx             # React app entry point
+└── index.css            # Tailwind configuration
 ```
 
 ### Technology Stack
@@ -41,21 +52,27 @@ src/
 - **TypeScript**: Static typing for better DX
 - **Tailwind CSS v4**: Utility-first styling
 - **React Router v6**: Client-side routing
+- **React Query**: Data fetching and caching
 - **Vite**: Build tool and dev server
 
-### API Integration
+### React Query Integration
 ```typescript
-// Product data fetching
-const [products, setProducts] = useState<Product[]>([]);
-const [loading, setLoading] = useState(true);
-
-useEffect(() => {
-  fetch('/api/products')
-    .then(res => res.json())
-    .then(data => setProducts(data.data))
-    .catch(err => console.error('Failed to fetch products:', err))
-    .finally(() => setLoading(false));
-}, []);
+// Modern data fetching with caching and metrics
+export function useProducts() {
+  return useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const startTime = performance.now()
+      const result = await catalogApi.getProducts()
+      const duration = performance.now() - startTime
+      
+      // Automatic performance tracking
+      recordAPICall('/api/v1/products', duration, true)
+      return result
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+}
 ```
 
 ## 🚀 Development
@@ -130,6 +147,50 @@ k8s/apps/frontend/
 - **Error Handling**: User-friendly error messages
 - **Navigation**: Intuitive product browsing
 - **Performance**: Optimized images and assets
+
+## 📊 Frontend Observability
+
+
+> Note: this is highly experimental. I could not find much reference to this pattern of using
+> prometheus to store frontend metrics. While it sounds odd, I think it is cool
+
+### Real User Monitoring (RUM)
+The frontend automatically collects performance and business metrics using modern browser APIs:
+
+**Performance Metrics:**
+- **Core Web Vitals**: LCP, FID, CLS scores
+- **Page Load Times**: Complete loading duration
+- **API Performance**: Request duration from user perspective
+- **React Query Metrics**: Cache hit rates and query performance
+
+**Business Metrics:**
+- **Page Views**: Track user navigation patterns
+- **Product Views**: Individual product engagement
+- **Error Tracking**: JavaScript exceptions and React errors
+- **User Sessions**: Journey tracking across the application
+
+
+> Note: So we take the metrics from the browser, and sends it to the Catalog API, which will eventually
+> be exposed at /metrics so prometheus can scrape it. Wild
+
+### Integration with Prometheus
+```typescript
+// Metrics automatically sent to backend every 30 seconds
+POST /api/v1/frontend-metrics
+{
+  "performance_metrics": [...],
+  "business_events": [...],
+  "error_events": [...]
+}
+
+// Viewable in existing Grafana dashboards alongside backend metrics
+```
+
+### Key Components
+- **MetricsService**: Automatic browser performance monitoring
+- **React Query Hooks**: API call instrumentation  
+- **ErrorBoundary**: React error catching and reporting
+- **Business Event Tracking**: User interaction monitoring
 
 ## 🔗 API Integration
 

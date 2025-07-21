@@ -1,13 +1,26 @@
+import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useProduct } from '../hooks/useProducts'
 import Layout from './layout/Layout'
 import Loading from './ui/Loading'
 import ErrorDisplay from './ui/ErrorDisplay'
+import { recordPageView, recordProductView } from '../services/metricsApi'
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data, isLoading, error, refetch } = useProduct(id!)
+
+  // Record page view and product view when data loads
+  useEffect(() => {
+    recordPageView('product_detail')
+  }, [])
+
+  useEffect(() => {
+    if (data?.data) {
+      recordProductView(data.data.id, data.data.name)
+    }
+  }, [data])
 
   // Loading state
   if (isLoading) {
