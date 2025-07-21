@@ -27,7 +27,7 @@ If you have any questions, you can open an issue in this repo.
 
 ```bash
 # 1. Start the lab
-./start-lab.sh
+./setup-lab.sh
 
 # 2. Deploy everything  
 ./tilt-lab up
@@ -195,7 +195,7 @@ Add these entries to your `/etc/hosts` file:
 
 ```bash
 # Start k3d cluster and basic setup
-./start-lab.sh
+./setup-lab.sh
 
 # Deploy the complete observability stack
 ./tilt-lab up
@@ -348,5 +348,5 @@ This project extensively used **AI pair programming** with Cursor/Claude. Here a
 
 ---
 
-**🎉 Ready to explore production observability?** Start with `./start-lab.sh` and dive into the Grafana dashboards!
+**🎉 Ready to explore production observability?** Start with `./setup-lab.sh` and dive into the Grafana dashboards!
 

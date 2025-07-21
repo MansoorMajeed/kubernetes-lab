@@ -145,7 +145,7 @@ graph TB
 
 3. **Start the lab environment**:
    ```bash
-   ./start-lab.sh
+   ./setup-lab.sh
    ./tilt-lab up
    ```
    
@@ -241,7 +241,7 @@ git tag | grep -E 'v[0-9]+\.[0-9]+\.[0-9]+'
 git checkout v1.0.0-monitoring-foundation
 
 # Always start the lab fresh after switching
-./start-lab.sh
+./setup-lab.sh
 ```
 
 ## Contributing

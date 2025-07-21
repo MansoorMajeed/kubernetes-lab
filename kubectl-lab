@@ -5,7 +5,7 @@ LAB_KUBECONFIG="$HOME/.kube/config-kubernetes-lab"
 
 if [ ! -f "$LAB_KUBECONFIG" ]; then
     echo "Error: Lab kubeconfig not found at $LAB_KUBECONFIG"
-    echo "Please run ./start-lab.sh first to set up the lab environment."
+    echo "Please run ./setup-lab.sh first to set up the lab environment."
     exit 1
 fi
 

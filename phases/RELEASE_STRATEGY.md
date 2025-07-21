@@ -90,7 +90,7 @@ X-Y hours
 
 ### 🔧 Getting Started
 1. Checkout this phase: `git checkout vX.Y.Z-phase-name`
-2. Start the lab: `./start-lab.sh`
+2. Start the lab: `./setup-lab.sh`
 3. Follow the guide: `cat phases/phase-X/README.md`
 
 ### 📖 Documentation
@@ -136,7 +136,7 @@ git push origin --tags
 ### Before Creating a Tag
 1. **Test the phase independently**:
    ```bash
-   ./start-lab.sh
+   ./setup-lab.sh
    # Test all functionality
    ```
 
@@ -155,7 +155,7 @@ git push origin --tags
 1. **Test the checkout process**:
    ```bash
    ./scripts/manage-phases.sh checkout vX.Y.Z-phase-name
-   ./start-lab.sh
+   ./setup-lab.sh
    ```
 
 2. **Verify the learning path**:
@@ -200,7 +200,7 @@ git push origin :refs/tags/v1.0.0-wrong-tag
 
 **Phase won't start**:
 ```bash
-./start-lab.sh --reset
+./setup-lab.sh --reset
 ```
 
 ## Tools and Scripts

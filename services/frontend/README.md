@@ -226,7 +226,7 @@ const [error, setError] = useState<string | null>(null);
 ### Manual Testing
 ```bash
 # 1. Start the lab
-./start-lab.sh
+./setup-lab.sh
 ./tilt-lab up
 
 # 2. Visit the frontend

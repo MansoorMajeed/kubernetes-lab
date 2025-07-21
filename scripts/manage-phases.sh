@@ -142,7 +142,7 @@ checkout_phase() {
     print_success "Successfully checked out phase: $phase"
     echo ""
     print_info "To start the lab environment:"
-    echo "  ./start-lab.sh"
+    echo "  ./setup-lab.sh"
     echo ""
     print_info "To read phase documentation:"
     echo "  cat phases/phase-*/README.md"

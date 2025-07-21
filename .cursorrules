@@ -94,7 +94,7 @@ When I need detailed information, I should read these files:
 - `scripts/simulate-traffic.sh` - Generate observability data
 
 **Common commands:**
-- `./start-lab.sh` - Initialize environment
+- `./setup-lab.sh` - Initialize environment
 - `./tilt-lab up` - Deploy everything
 - `./kubectl-lab get pods -A` - Check all services
 - `./scripts/simulate-traffic.sh` - Generate test data

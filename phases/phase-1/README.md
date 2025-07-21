@@ -96,7 +96,7 @@ Before starting, ensure you have:
 
 1. **Start the lab environment**:
    ```bash
-   ./start-lab.sh
+   ./setup-lab.sh
    ```
 
 2. **Let Tilt handle the deployment**:
@@ -164,7 +164,7 @@ cat k8s/observability/prometheus-values.yaml
 **Cluster won't start**:
 - Check if Docker is running
 - Verify ports 8081 and 8080 are free
-- Try: `./start-lab.sh --reset`
+- Try: `./setup-lab.sh --reset`
 
 **Services not accessible**:
 - Check ingress controller: `./kubectl-lab get pods -n kube-system`
