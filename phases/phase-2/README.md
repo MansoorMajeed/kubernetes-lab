@@ -44,28 +44,67 @@ By the end of this phase, you will:
 
 At the end of Phase 2, you'll have:
 
+```mermaid
+graph TB
+    Dev[👩‍💻 Developer] --> Tilt[🔄 Tilt<br/>Auto-deploy]
+    Tilt --> k3d[☸️ k3d Cluster<br/>Local Kubernetes]
+    
+    k3d --> Observability[📊 Observability Stack]
+    k3d --> Services[🛍️ Application Services]
+    
+    subgraph "📊 Observability Stack"
+        Prometheus[📈 Prometheus<br/>Metrics]
+        Grafana[📊 Grafana<br/>Dashboards] 
+        Loki[📝 Loki<br/>Logs]
+        Tempo[🔍 Tempo<br/>Traces]
+        Alloy[🔗 Alloy<br/>Collector]
+    end
+    
+    subgraph "🛍️ Catalog Service"
+        CatalogAPI[🛒 Catalog Service<br/>Go + REST API<br/>OpenTelemetry Instrumented]
+        PostgreSQL[(🗄️ PostgreSQL<br/>Product Database)]
+        CatalogAPI --> PostgreSQL
+    end
+    
+    subgraph "🌐 Access Points"
+        CatalogEndpoint[🛒 catalog.kubelab.lan:8081]
+        GrafanaUI[📊 grafana.kubelab.lan:8081]
+        PrometheusUI[📈 prometheus.kubelab.lan:8081]
+    end
+    
+    Services --> CatalogAPI
+    CatalogAPI --> CatalogEndpoint
+    Grafana --> GrafanaUI
+    Prometheus --> PrometheusUI
+    
+    subgraph "📊 Three Pillars of Observability"
+        CatalogMetrics[📈 Custom Metrics<br/>Request counts, latency, business metrics]
+        CatalogLogs[📝 Structured Logs<br/>JSON format with correlation IDs]
+        CatalogTraces[🔍 Distributed Traces<br/>Request flows, database calls]
+    end
+    
+    CatalogAPI --> CatalogMetrics
+    CatalogAPI --> CatalogLogs
+    CatalogAPI --> CatalogTraces
+    
+    CatalogMetrics --> Prometheus
+    CatalogLogs --> Loki
+    CatalogTraces --> Tempo
+    
+    style Dev fill:#e1f5fe
+    style Observability fill:#f3e5f5
+    style Services fill:#e8f5e8
+    style CatalogAPI fill:#c8e6c9
+    style PostgreSQL fill:#e3f2fd
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    k3d Kubernetes Cluster                   │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │ Prometheus  │  │   Grafana   │  │    Loki     │        │
-│  │  (Metrics)  │  │(Dashboards) │  │   (Logs)    │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │   Catalog   │  │ PostgreSQL  │  │    Tempo    │        │
-│  │  Service    │  │ Database    │  │  (Traces)   │        │
-│  │(OpenTelemetry)│ │             │  │             │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │                     Alloy                           │    │
-│  │          (Collects Metrics + Logs + Traces)        │    │
-│  └─────────────────────────────────────────────────────┘    │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+
+**Key Additions in Phase 2:**
+- **🛒 Catalog Service**: Production-ready Go microservice with REST API
+- **🗄️ PostgreSQL**: Relational database for product data
+- **📊 Full Observability**: Metrics, logs, and traces from application code
+- **🔍 OpenTelemetry**: Industry-standard instrumentation for distributed tracing
+- **📈 Custom Metrics**: Business and technical metrics specific to the catalog service
+- **📝 Structured Logging**: JSON-formatted logs with trace correlation
 
 ## Key Concepts Covered
 

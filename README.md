@@ -87,76 +87,68 @@ graph TB
     style Services fill:#e8f5e8
 ```
 
-### Service Architecture (Current + Future)
-```mermaid
-graph LR
-    Client[🌐 Client] --> Frontend[⚛️ LocalMart Frontend<br/>✅ React + Tailwind]
-    Frontend --> LB[⚖️ Load Balancer<br/>k3d ingress]
-    LB --> Catalog[🛒 Catalog Service<br/>✅ Go + PostgreSQL]
-    LB -.-> Cart[🛍️ Cart Service<br/>🔮 Phase 4.0]
-    LB -.-> Review[⭐ Review Service<br/>🔮 Phase 5.0]
-    
-    Frontend -.-> Cart
-    Frontend -.-> Review
-    
-    Catalog --> CatalogDB[(🗄️ PostgreSQL<br/>Products)]
-    Cart -.-> CartDB[(📦 Redis<br/>Sessions)]
-    Review -.-> ReviewDB[(🗄️ MongoDB<br/>Reviews)]
-    
-    subgraph "📊 Observability Pipeline"
-        Traces[🔍 Distributed Traces]
-        Logs[📝 Structured Logs] 
-        Metrics[📈 Custom Metrics]
-    end
-    
-    Frontend --> Traces
-    Catalog --> Traces
-    Catalog --> Logs  
-    Catalog --> Metrics
-    
-    style Frontend fill:#e3f2fd
-    style Catalog fill:#c8e6c9
-    style Cart fill:#ffecb3
-    style Review fill:#ffecb3
-```
-
-## 🔮 **Future Architecture Vision**
-
-**Coming in Phase 3+**: Complete microservices ecosystem with diverse technologies and communication patterns.
-
+### Service Architecture (Current ✅ + Future 🔮)
 ```mermaid
 graph TB
-    Frontend[🌐 Frontend<br/>React/Vue<br/>Complete Shopping Experience] --> LB[⚖️ Load Balancer<br/>k3d ingress]
+    Client[🌐 Client] --> Frontend[⚛️ LocalMart Frontend<br/>✅ React + Tailwind CSS]
+    Frontend --> LB[⚖️ Load Balancer<br/>✅ k3d ingress]
     
-    LB --> CatalogAPI[🛒 Catalog Service<br/>Go + REST + gRPC<br/>✅ Current v2.2.0]
-    LB --> ReviewAPI[⭐ Review Service<br/>Python + REST<br/>🚀 Phase 3.0.0]
-    LB --> CartAPI[🛍️ Cart Service<br/>Go + REST<br/>🚀 Phase 3.1.0]
+    %% Current Services (Solid lines)
+    LB --> CatalogAPI[🛒 Catalog Service<br/>✅ Go + REST API<br/>Current v2.2.0]
+    CatalogAPI --> PostgreSQL[(🗄️ PostgreSQL<br/>✅ Products)]
     
-    CartAPI -->|"🚀 gRPC<br/>Fast validation"| CatalogGRPC[🛒 Catalog gRPC<br/>Product validation]
-    ReviewAPI -->|"🌐 REST<br/>Rich product data"| CatalogAPI
+    %% Future Services (Dotted lines)  
+    LB -.-> CartAPI[🛍️ Cart Service<br/>🔮 Go + REST API<br/>Phase 4.0.0]
+    LB -.-> ReviewAPI[⭐ Review Service<br/>🔮 Python + REST API<br/>Phase 5.0.0]
     
-    CatalogAPI --> PostgreSQL[(🗄️ PostgreSQL<br/>Products)]
-    CatalogGRPC --> PostgreSQL
-    ReviewAPI --> MongoDB[(🍃 MongoDB<br/>Reviews + Ratings)]
-    CartAPI --> Redis[(🔴 Redis<br/>Cart Sessions)]
+    %% Future Service Communication (Dotted lines)
+    CartAPI -.->|"🚀 gRPC<br/>Fast validation"| CatalogGRPC[🛒 Catalog gRPC<br/>🔮 Product validation]
+    ReviewAPI -.->|"🌐 REST<br/>Rich product data"| CatalogAPI
+    CatalogGRPC -.-> PostgreSQL
     
-    subgraph "📊 Complete Observability"
+    %% Future Databases (Dotted lines)
+    CartAPI -.-> Redis[(🔴 Redis<br/>🔮 Cart Sessions)]
+    ReviewAPI -.-> MongoDB[(🍃 MongoDB<br/>🔮 Reviews + Ratings)]
+    
+    %% Observability Stack (Current)
+    subgraph "📊 Observability Stack ✅"
         Prometheus[📈 Prometheus]
-        Grafana[📊 Grafana]
+        Grafana[📊 Grafana] 
         Loki[📝 Loki]
         Tempo[🔍 Tempo]
     end
     
-    CatalogAPI --> Prometheus
-    ReviewAPI --> Prometheus
-    CartAPI --> Prometheus
+    %% Current Observability Connections (Solid lines)
     Frontend --> Prometheus
+    CatalogAPI --> Prometheus
+    CatalogAPI --> Loki
+    CatalogAPI --> Tempo
     
-    style CatalogAPI fill:#c8e6c9
-    style ReviewAPI fill:#fff3e0
-    style CartAPI fill:#e3f2fd
-    style Frontend fill:#fce4ec
+    %% Future Observability Connections (Dotted lines)
+    CartAPI -.-> Prometheus
+    ReviewAPI -.-> Prometheus
+    CartAPI -.-> Loki  
+    ReviewAPI -.-> Loki
+    CartAPI -.-> Tempo
+    ReviewAPI -.-> Tempo
+    
+    %% Styling - Current (bright colors)
+    style Frontend fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    style CatalogAPI fill:#c8e6c9,stroke:#388e3c,stroke-width:3px
+    style PostgreSQL fill:#e1f5fe,stroke:#0277bd,stroke-width:3px
+    style LB fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    
+    %% Styling - Future (muted colors)
+    style CartAPI fill:#fff3e0,stroke:#f57c00,stroke-width:2px,stroke-dasharray: 5 5
+    style ReviewAPI fill:#fce4ec,stroke:#c2185b,stroke-width:2px,stroke-dasharray: 5 5
+    style CatalogGRPC fill:#e8f5e8,stroke:#4caf50,stroke-width:2px,stroke-dasharray: 5 5
+    style Redis fill:#ffebee,stroke:#f44336,stroke-width:2px,stroke-dasharray: 5 5
+    style MongoDB fill:#e0f2f1,stroke:#00695c,stroke-width:2px,stroke-dasharray: 5 5
 ```
+
+**Legend:**
+- **✅ Solid lines & bright colors**: Currently implemented and working
+- **🔮 Dotted lines & muted colors**: Planned for future phases
 
 ### **What's Coming Next** 🚀
 

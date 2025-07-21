@@ -28,22 +28,39 @@ By the end of this phase, you will:
 
 At the end of Phase 1, you'll have:
 
+```mermaid
+graph TB
+    Dev[👩‍💻 Developer] --> Tilt[🔄 Tilt<br/>Auto-deploy]
+    Tilt --> k3d[☸️ k3d Cluster<br/>Local Kubernetes]
+    
+    k3d --> Observability[📊 Observability Stack]
+    
+    Observability --> Prometheus[📈 Prometheus<br/>Metrics Collection]
+    Observability --> Grafana[📊 Grafana<br/>Dashboards & Visualization] 
+    Observability --> Loki[📝 Loki<br/>Log Aggregation]
+    Observability --> Alloy[🔗 Alloy<br/>Log Collection & Processing]
+    
+    subgraph "🌐 Access Points"
+        GrafanaUI[📊 grafana.kubelab.lan:8081]
+        PrometheusUI[📈 prometheus.kubelab.lan:8081]
+    end
+    
+    Grafana --> GrafanaUI
+    Prometheus --> PrometheusUI
+    
+    style Dev fill:#e1f5fe
+    style Observability fill:#f3e5f5
+    style k3d fill:#e8f5e8
+    style Tilt fill:#fff3e0
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    k3d Kubernetes Cluster                   │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │ Prometheus  │  │   Grafana   │  │    Loki     │        │
-│  │  (Metrics)  │  │(Dashboards) │  │   (Logs)    │        │
-│  └─────────────┘  └─────────────┘  └─────────────┘        │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐                         │
-│  │    Alloy    │  │   Ingress   │                         │
-│  │(Log Collection)│  │Controller │                         │
-│  └─────────────┘  └─────────────┘                         │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+
+**Key Components:**
+- **🔄 Tilt**: Automates all deployments and builds
+- **☸️ k3d**: Local Kubernetes cluster running in Docker
+- **📈 Prometheus**: Collects and stores time-series metrics
+- **📊 Grafana**: Provides dashboards and data visualization
+- **📝 Loki**: Aggregates and indexes log data
+- **🔗 Alloy**: Modern telemetry collector for logs, metrics, and traces
 
 ## Key Concepts Covered
 
