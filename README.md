@@ -118,20 +118,6 @@ graph TB
         Tempo[🔍 Tempo]
     end
     
-    %% Current Observability Connections (Solid lines)
-    Frontend --> Prometheus
-    CatalogAPI --> Prometheus
-    CatalogAPI --> Loki
-    CatalogAPI --> Tempo
-    
-    %% Future Observability Connections (Dotted lines)
-    CartAPI -.-> Prometheus
-    ReviewAPI -.-> Prometheus
-    CartAPI -.-> Loki  
-    ReviewAPI -.-> Loki
-    CartAPI -.-> Tempo
-    ReviewAPI -.-> Tempo
-    
     %% Styling - Current (bright colors)
     style Frontend fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
     style CatalogAPI fill:#c8e6c9,stroke:#388e3c,stroke-width:3px
@@ -149,6 +135,7 @@ graph TB
 **Legend:**
 - **✅ Solid lines & bright colors**: Currently implemented and working
 - **🔮 Dotted lines & muted colors**: Planned for future phases
+- **📊 Observability**: All services automatically send metrics, logs, and traces to the observability stack
 
 ### **What's Coming Next** 🚀
 
