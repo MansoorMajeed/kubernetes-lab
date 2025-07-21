@@ -17,6 +17,7 @@ When I need detailed information, I should read these files:
 | **Architecture Planning** | `docs/brainstorm/README.md` | Complete 4-service architecture plan |
 | **Phase Progression** | `phases/README.md` | Iterative development roadmap |
 | **Service Implementation Patterns** | `services/catalog/README.md` | Complete reference implementation |
+| **Frontend Implementation** | `services/frontend/README.md` | React + Tailwind CSS patterns |
 | **API Testing Examples** | `services/catalog/README.md` | `#testing-examples` section |
 | **Observability Features** | `services/catalog/README.md` | `#observability-features-deep-dive` |
 | **Code Organization** | `services/catalog/README.md` | `#code-organization-guide` |

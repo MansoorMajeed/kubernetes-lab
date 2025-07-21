@@ -33,8 +33,17 @@ If you have any questions, you can open an issue in this repo.
 ./tilt-lab up
 ```
 
-**Access:** Add to `/etc/hosts` then visit [grafana.kubelab.lan:8081](http://grafana.kubelab.lan:8081) (admin/password)
+**Access:** Add to `/etc/hosts` then visit [localmart.kubelab.lan:8081](http://localmart.kubelab.lan:8081) or [grafana.kubelab.lan:8081](http://grafana.kubelab.lan:8081) (admin/password)
 Check the `Host configuration` section below for all the hosts to add to the hosts file
+
+## 🎯 Current Status: Phase 3.0.0 Complete ✅
+
+**✅ Phase 1-2**: Observability stack + Go catalog service  
+**✅ Phase 3.0.0**: React frontend with product browsing and details  
+**🔮 Phase 4.0.0**: Shopping cart service (Go + Redis + gRPC)  
+**🔮 Phase 5.0.0**: Review service (Python + MongoDB)  
+
+**Try it now:** [LocalMart E-commerce →](http://localmart.kubelab.lan:8081)
 
 ---
 
@@ -81,15 +90,18 @@ graph TB
 ### Service Architecture (Current + Future)
 ```mermaid
 graph LR
-    Client[🌐 Client] --> LB[⚖️ Load Balancer<br/>k3d ingress]
-    LB --> Catalog[🛒 Catalog Service<br/>✅ Implemented]
-    LB -.-> Cart[🛍️ Cart Service<br/>🔮 Future Phase]
-    LB -.-> Orders[📦 Orders Service<br/>🔮 Future Phase]
-    LB -.-> Users[👤 User Service<br/>🔮 Future Phase]
+    Client[🌐 Client] --> Frontend[⚛️ LocalMart Frontend<br/>✅ React + Tailwind]
+    Frontend --> LB[⚖️ Load Balancer<br/>k3d ingress]
+    LB --> Catalog[🛒 Catalog Service<br/>✅ Go + PostgreSQL]
+    LB -.-> Cart[🛍️ Cart Service<br/>🔮 Phase 4.0]
+    LB -.-> Review[⭐ Review Service<br/>🔮 Phase 5.0]
+    
+    Frontend -.-> Cart
+    Frontend -.-> Review
     
     Catalog --> CatalogDB[(🗄️ PostgreSQL<br/>Products)]
     Cart -.-> CartDB[(📦 Redis<br/>Sessions)]
-    Orders -.-> OrdersDB[(🗄️ PostgreSQL<br/>Transactions)]
+    Review -.-> ReviewDB[(🗄️ MongoDB<br/>Reviews)]
     
     subgraph "📊 Observability Pipeline"
         Traces[🔍 Distributed Traces]
@@ -97,14 +109,15 @@ graph LR
         Metrics[📈 Custom Metrics]
     end
     
+    Frontend --> Traces
     Catalog --> Traces
     Catalog --> Logs  
     Catalog --> Metrics
     
+    style Frontend fill:#e3f2fd
     style Catalog fill:#c8e6c9
     style Cart fill:#ffecb3
-    style Orders fill:#ffecb3
-    style Users fill:#ffecb3
+    style Review fill:#ffecb3
 ```
 
 ## 🔮 **Future Architecture Vision**
