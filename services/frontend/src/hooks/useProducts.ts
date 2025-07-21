@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { catalogApi } from '../services/catalogApi'
+import { recordReactQueryMetric, recordAPICall } from '../services/metricsApi'
 
 // Query keys for React Query cache management
 export const productKeys = {
@@ -14,7 +15,24 @@ export const productKeys = {
 export function useProducts() {
   return useQuery({
     queryKey: productKeys.lists(),
-    queryFn: () => catalogApi.getProducts(),
+    queryFn: async () => {
+      const startTime = performance.now()
+      
+      try {
+        const result = await catalogApi.getProducts()
+        const duration = performance.now() - startTime
+        
+        // Record metrics
+        recordAPICall('/api/v1/products', duration, true)
+        recordReactQueryMetric('products_list', duration, false)
+        
+        return result
+      } catch (error) {
+        const duration = performance.now() - startTime
+        recordAPICall('/api/v1/products', duration, false)
+        throw error
+      }
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   })
@@ -24,7 +42,24 @@ export function useProducts() {
 export function useProduct(id: string | number) {
   return useQuery({
     queryKey: productKeys.detail(id),
-    queryFn: () => catalogApi.getProduct(id),
+    queryFn: async () => {
+      const startTime = performance.now()
+      
+      try {
+        const result = await catalogApi.getProduct(id)
+        const duration = performance.now() - startTime
+        
+        // Record metrics
+        recordAPICall(`/api/v1/products/${id}`, duration, true)
+        recordReactQueryMetric(`product_detail_${id}`, duration, false)
+        
+        return result
+      } catch (error) {
+        const duration = performance.now() - startTime
+        recordAPICall(`/api/v1/products/${id}`, duration, false)
+        throw error
+      }
+    },
     enabled: !!id, // Only run query if ID is provided
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
