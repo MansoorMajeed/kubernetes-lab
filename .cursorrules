@@ -49,6 +49,12 @@ When I need detailed information, I should read these files:
 - Service discovery and networking configs
 - Integration between observability components
 
+**Dependency Management Best Practices:**
+- ✅ **Use official scaffolding tools** (npm create, yarn create) to get latest versions
+- ✅ **Provide commands** instead of manually creating package.json files
+- ✅ **Let tooling handle** version management and compatibility
+- ❌ **Never manually write** package.json - versions get outdated quickly
+
 **Learning Environment Priority:**
 - ✅ **ALWAYS prioritize simple, easy-to-understand implementations** for learning purposes
 - ✅ Choose clarity over complexity unless explicitly asked for advanced patterns
