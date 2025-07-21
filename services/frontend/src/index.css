@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Force Tailwind to detect these classes */
+/* grid grid-cols-1 grid-cols-2 grid-cols-3 grid-cols-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 */
+
 /* Custom styles can go here */
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
