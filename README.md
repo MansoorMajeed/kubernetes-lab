@@ -189,6 +189,7 @@ Add these entries to your `/etc/hosts` file:
 
 # Application Services  
 127.0.0.1 catalog.kubelab.lan
+127.0.0.1 localmart.kubelab.lan
 
 # Demo Apps
 127.0.0.1 nginx-hello.kubelab.lan
@@ -234,6 +235,7 @@ Add these entries to your `/etc/hosts` file:
 
 | Service | Access | Documentation |
 |---------|--------|---------------|
+| **LocalMart Frontend** | [localmart.kubelab.lan:8081](http://localmart.kubelab.lan:8081) | Complete e-commerce UI (Phase 3.0.0) |
 | **Catalog API** | [catalog.kubelab.lan:8081](http://catalog.kubelab.lan:8081) | [Full API docs →](./services/catalog/) |
 | **Demo App** | [nginx-hello.kubelab.lan:8081](http://nginx-hello.kubelab.lan:8081) | Simple test service |
 

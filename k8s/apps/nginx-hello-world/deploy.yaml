@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-hello-world
-  namespace: frontend
+  namespace: demo
   labels:
     app: nginx-hello-world
     monitoring.kubelab.lan/scrape: "true" # Enable scraping for this deployment
