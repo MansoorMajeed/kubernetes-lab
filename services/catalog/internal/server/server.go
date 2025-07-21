@@ -143,9 +143,15 @@ func (s *Server) setupRoutes() {
 	analysisService := services.NewAnalysisService(productService)
 	productHandler := handlers.NewProductHandler(productService, analysisService)
 
+	// Create frontend metrics handler
+	frontendMetricsHandler := handlers.NewFrontendMetricsHandler()
+
 	// API v1 routes
 	v1 := s.router.Group("/api/v1")
 	{
+		// Frontend metrics endpoint
+		v1.POST("/frontend-metrics", frontendMetricsHandler.HandleFrontendMetrics)
+
 		// Product routes
 		products := v1.Group("/products")
 		{

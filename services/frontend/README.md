@@ -169,6 +169,10 @@ The frontend automatically collects performance and business metrics using moder
 - **Error Tracking**: JavaScript exceptions and React errors
 - **User Sessions**: Journey tracking across the application
 
+
+> Note: So we take the metrics from the browser, and sends it to the Catalog API, which will eventually
+> be exposed at /metrics so prometheus can scrape it. Wild
+
 ### Integration with Prometheus
 ```typescript
 // Metrics automatically sent to backend every 30 seconds
