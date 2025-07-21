@@ -2,9 +2,10 @@
 
 ## 🎯 Project Context (Quick Reference)
 - **LocalMart E-commerce Platform** - Learning environment for cloud-native observability
-- **Current Phase**: 2.2.0 (Complete observability: Prometheus, Grafana, Loki, Tempo + Catalog service)
+- **Current Phase**: 2.2.0 → Planning 3.0.0 (Frontend integration with iterative development)
+- **Development Approach**: Iterative UI evolution (3.0 Frontend → 4.0 Cart+UI → 5.0 Review+UI)
 - **Target Audience**: DevOps engineers, SREs, developers learning production patterns
-- **Approach**: Production patterns optimized for local learning (not production scale)
+- **Philosophy**: Production patterns optimized for local learning (not production scale)
 
 ## 📚 Documentation Roadmap
 
@@ -13,6 +14,8 @@ When I need detailed information, I should read these files:
 | **Topic** | **Read This File** | **Specific Section** |
 |-----------|-------------------|---------------------|
 | **Project Overview** | `README.md` | Full introduction and architecture |
+| **Architecture Planning** | `docs/brainstorm/README.md` | Complete 4-service architecture plan |
+| **Phase Progression** | `phases/README.md` | Iterative development roadmap |
 | **Service Implementation Patterns** | `services/catalog/README.md` | Complete reference implementation |
 | **API Testing Examples** | `services/catalog/README.md` | `#testing-examples` section |
 | **Observability Features** | `services/catalog/README.md` | `#observability-features-deep-dive` |
@@ -61,18 +64,23 @@ When I need detailed information, I should read these files:
 ## 🛠️ Development Decision Tree
 
 **User asks about...**
+- **"What's our overall architecture plan?"** → Read `docs/brainstorm/README.md` for complete vision
+- **"What phase are we in / what's next?"** → Read `phases/README.md` for progression roadmap
 - **"How do I implement X in a service?"** → Read `services/catalog/` as reference pattern
+- **"How do I build the frontend?"** → Follow iterative approach: basic UI → enhance with each service
 - **"How do I test the API?"** → Point to `services/catalog/README.md#testing-examples`
 - **"How does tracing/logging/metrics work?"** → Reference `services/catalog/README.md#observability`
-- **"How do I add a new service?"** → Follow catalog service pattern, update Tiltfile + ingress
+- **"How do I add a new service?"** → Follow catalog service pattern, update Tiltfile + ingress + integrate into UI
 - **"How do I see traces/logs?"** → Direct to Grafana examples in catalog service docs
-- **"What's the architecture?"** → Reference README.md diagrams
+- **"What's the current architecture?"** → Reference README.md diagrams
 - **Setup issues** → Point to README.md setup section
 
 ## 📁 Quick File Reference
 
 **Core files to know:**
-- `services/catalog/` - Complete reference implementation
+- `docs/brainstorm/README.md` - Complete 4-service architecture plan and vision
+- `phases/README.md` - Iterative development roadmap and phase definitions
+- `services/catalog/` - Complete reference implementation for backend services
 - `k8s/observability/` - Observability stack configurations  
 - `k8s/apps/catalog/` - Catalog service K8s manifests
 - `Tiltfile` - Automated deployment configuration
@@ -86,12 +94,26 @@ When I need detailed information, I should read these files:
 
 ## 🎯 Key Patterns to Follow
 
+**Iterative Development Approach:**
+1. **Start with basic UI** consuming existing services (Phase 3.0)
+2. **Add backend service** with full observability (Phase 4.0, 5.0)
+3. **Integrate into existing UI** rather than building separate frontends
+4. **Enhance progressively** - don't rebuild, just add features
+5. **Maintain consistency** across all UI enhancements
+
 **When adding new services:**
 1. Follow `services/catalog/` structure and patterns
 2. Include observability from day one (tracing, logging, metrics)
 3. Use clean architecture (handlers → models → database)
-4. Implement comprehensive testing examples
-5. Create service-specific README with API docs
+4. Plan UI integration from the start (not an afterthought)
+5. Implement comprehensive testing examples
+6. Create service-specific README with API docs
+
+**Frontend Integration Patterns:**
+1. **API consumption**: Clear error handling, loading states
+2. **State management**: Keep it simple, enhance as needed
+3. **Observability**: Include frontend tracing and performance monitoring
+4. **Responsive design**: Mobile-first, modern UI patterns
 
 **Response format consistency:**
 - API responses: `{"data": {...}, "page": 1, "count": 25}` 

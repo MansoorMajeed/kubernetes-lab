@@ -26,18 +26,48 @@ This directory contains documentation for each learning phase of the Kubernetes 
 **Duration**: 3-4 hours
 **Key Concepts**: Application metrics, tracing, structured logging, health checks
 
-### Phase 3: Microservices (v3.x) - Service Communication
-TODO
+### Phase 3: Frontend Foundation (v3.x) - Basic E-commerce UI
+**Goal**: Build working e-commerce frontend consuming existing Catalog Service
+
+**Sub-phases:**
+- **v3.0.0**: React/Vue Frontend (Product browsing, search, details)
+- **v3.1.0**: UI Polish (Error handling, loading states, responsive design)
+- **v3.2.0**: Frontend Observability (Browser tracing, performance monitoring)
 
 **Prerequisites**: Phase 2 completed
-**Key Concepts**: Service discovery, load balancing, circuit breakers, service mesh
+**Duration**: 3-4 hours
+**Key Concepts**: Frontend-backend integration, API consumption, full-stack tracing, modern UI/UX patterns
 
-### Phase 4: Advanced Observability (v4.x) - Production Readiness
-TODO
+### Phase 4: Cart Service + UI (v4.x) - High-Performance Shopping Cart
+**Goal**: Add shopping cart with gRPC communication and integrate into existing UI
+
+**Sub-phases:**
+- **v4.0.0**: Cart Service (Go + Redis + gRPC to Catalog)
+- **v4.1.0**: UI Integration (Add cart functionality to existing frontend)
+- **v4.2.0**: Performance Analysis (REST vs gRPC comparison, optimization)
 
 **Prerequisites**: Phase 3 completed
-**Duration**: 5-6 hours
-**Key Concepts**: SLIs/SLOs, error budgets, incident response, cost optimization
+**Duration**: 4-5 hours
+**Key Concepts**: gRPC communication, Redis caching, UI state management, protocol performance comparison
+
+### Phase 5: Review Service + UI (v5.x) - NoSQL Social Features
+**Goal**: Add review system with MongoDB and integrate into existing UI
+
+**Sub-phases:**
+- **v5.0.0**: Review Service (Python + MongoDB + REST to Catalog)
+- **v5.1.0**: UI Integration (Add review functionality to existing frontend)
+- **v5.2.0**: Cross-Language Observability (Python service monitoring)
+
+**Prerequisites**: Phase 4 completed
+**Duration**: 4-5 hours
+**Key Concepts**: NoSQL patterns, document databases, multi-language stack, rich data modeling
+
+### Phase 6: Production Patterns (v6.x) - Advanced Optimization
+**Goal**: Production-ready patterns and cross-service optimization
+
+**Prerequisites**: Phase 5 completed
+**Duration**: 6-8 hours
+**Key Concepts**: SLIs/SLOs, error budgets, circuit breakers, service mesh, event-driven architecture
 
 ## Getting Started
 
