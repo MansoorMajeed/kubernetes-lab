@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
+	otelcodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -47,19 +47,19 @@ func (s *CatalogGRPCServer) ValidateProduct(ctx context.Context, req *catalogpb.
 
 	if req.ProductId == "" {
 		span.RecordError(fmt.Errorf("product ID is required"))
-		span.SetStatus(codes.Error, "product ID is required")
+		span.SetStatus(otelcodes.Error, "product ID is required")
 		return nil, status.Error(codes.InvalidArgument, "product ID is required")
 	}
 
 	if req.Quantity <= 0 {
 		span.RecordError(fmt.Errorf("quantity must be positive"))
-		span.SetStatus(codes.Error, "quantity must be positive")
+		span.SetStatus(otelcodes.Error, "quantity must be positive")
 		return nil, status.Error(codes.InvalidArgument, "quantity must be positive")
 	}
 
 	// Query product from database
 	var product models.Product
-	query := `SELECT id, name, description, price, stock_quantity, category_id, image_url, created_at, updated_at 
+	query := `SELECT id, name, description, price, stock_quantity 
 			  FROM products WHERE id = $1`
 	
 	err := s.db.QueryRowContext(ctx, query, req.ProductId).Scan(
@@ -67,11 +67,7 @@ func (s *CatalogGRPCServer) ValidateProduct(ctx context.Context, req *catalogpb.
 		&product.Name,
 		&product.Description,
 		&product.Price,
-		&product.StockQuantity,
-		&product.CategoryID,
-		&product.ImageURL,
-		&product.CreatedAt,
-		&product.UpdatedAt,
+		&product.StockQty,
 	)
 
 	if err != nil {
@@ -94,7 +90,7 @@ func (s *CatalogGRPCServer) ValidateProduct(ctx context.Context, req *catalogpb.
 		}
 
 		span.RecordError(err)
-		span.SetStatus(codes.Error, "database query failed")
+		span.SetStatus(otelcodes.Error, "database query failed")
 		logger.WithError(err).WithFields(logrus.Fields{
 			"component":  "grpc",
 			"action":     "validate_product",
@@ -105,26 +101,26 @@ func (s *CatalogGRPCServer) ValidateProduct(ctx context.Context, req *catalogpb.
 	}
 
 	// Check stock availability
-	inStock := product.StockQuantity >= int(req.Quantity)
+	inStock := product.StockQty >= int(req.Quantity)
 	
 	span.SetAttributes(
 		attribute.Bool("product.found", true),
 		attribute.String("product.name", product.Name),
 		attribute.Float64("product.price", product.Price),
-		attribute.Int("product.stock_quantity", product.StockQuantity),
+		attribute.Int("product.stock_quantity", product.StockQty),
 		attribute.Bool("product.in_stock", inStock),
 	)
 
 	response := &catalogpb.ProductValidationResponse{
 		Valid:             true,
 		InStock:           inStock,
-		AvailableQuantity: int32(product.StockQuantity),
+		AvailableQuantity: int32(product.StockQty),
 		ProductName:       product.Name,
 		Price:             product.Price,
 	}
 
 	if !inStock {
-		response.ErrorMessage = fmt.Sprintf("Insufficient stock. Available: %d, Requested: %d", product.StockQuantity, req.Quantity)
+		response.ErrorMessage = fmt.Sprintf("Insufficient stock. Available: %d, Requested: %d", product.StockQty, req.Quantity)
 	}
 
 	logger.WithFields(logrus.Fields{
@@ -133,7 +129,7 @@ func (s *CatalogGRPCServer) ValidateProduct(ctx context.Context, req *catalogpb.
 		"product_id":         req.ProductId,
 		"product_name":       product.Name,
 		"in_stock":           inStock,
-		"available_quantity": product.StockQuantity,
+		"available_quantity": product.StockQty,
 		"requested_quantity": req.Quantity,
 	}).Info("Product validation completed")
 
@@ -149,7 +145,7 @@ func (s *CatalogGRPCServer) GetProductPrice(ctx context.Context, req *catalogpb.
 
 	if req.ProductId == "" {
 		span.RecordError(fmt.Errorf("product ID is required"))
-		span.SetStatus(codes.Error, "product ID is required")
+		span.SetStatus(otelcodes.Error, "product ID is required")
 		return nil, status.Error(codes.InvalidArgument, "product ID is required")
 	}
 
@@ -167,7 +163,7 @@ func (s *CatalogGRPCServer) GetProductPrice(ctx context.Context, req *catalogpb.
 		}
 
 		span.RecordError(err)
-		span.SetStatus(codes.Error, "database query failed")
+		span.SetStatus(otelcodes.Error, "database query failed")
 		return nil, status.Error(codes.Internal, "Failed to retrieve product price")
 	}
 
@@ -201,9 +197,7 @@ func (s *CatalogGRPCServer) ValidateCartItems(ctx context.Context, req *catalogp
 	allValid := true
 
 	for i, item := range req.Items {
-		span.AddEvent(fmt.Sprintf("validating_item_%d", i), 
-			attribute.String("product_id", item.ProductId),
-			attribute.Int("quantity", int(item.Quantity)))
+		span.AddEvent(fmt.Sprintf("validating_item_%d", i))
 
 		// Reuse the ValidateProduct method for each item
 		validationReq := &catalogpb.ProductValidationRequest{
@@ -214,7 +208,7 @@ func (s *CatalogGRPCServer) ValidateCartItems(ctx context.Context, req *catalogp
 		result, err := s.ValidateProduct(ctx, validationReq)
 		if err != nil {
 			span.RecordError(err)
-			span.SetStatus(codes.Error, "failed to validate cart item")
+			span.SetStatus(otelcodes.Error, "failed to validate cart item")
 			return nil, err
 		}
 
