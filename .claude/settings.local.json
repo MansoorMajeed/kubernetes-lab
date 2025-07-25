@@ -10,7 +10,17 @@
       "Bash(./kubectl-lab logs -n cart deployment/redis --tail=10)",
       "Bash(git commit:*)",
       "Bash(mkdir:*)",
-      "Bash(protoc:*)"
+      "Bash(protoc:*)",
+      "Bash(./kubectl-lab logs -n catalog deployment/catalog --tail=20)",
+      "Bash(./kubectl-lab describe pod -n catalog -l app=catalog)",
+      "Bash(./kubectl-lab get service -n catalog catalog -o yaml)",
+      "Bash(./kubectl-lab get pods -n catalog -l app=catalog)",
+      "Bash(touch:*)",
+      "Bash(./kubectl-lab get pods -n catalog)",
+      "Bash(./kubectl-lab describe pod -n catalog catalog-6d5749f99b-j2w26)",
+      "Bash(./kubectl-lab get pods -n catalog -w)",
+      "Bash(go mod:*)",
+      "Bash(go build:*)"
     ],
     "deny": []
   }

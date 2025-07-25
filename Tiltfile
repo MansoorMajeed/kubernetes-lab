@@ -80,10 +80,10 @@ k8s_yaml('k8s/apps/catalog/namespace.yaml')
 # Deploy PostgreSQL database
 k8s_yaml('k8s/apps/catalog/postgres.yaml')
 
-# Build catalog service Docker image
+# Build catalog service Docker image (from project root to include proto)
 docker_build(
     'catalog-service:latest',
-    './services/catalog',
+    '.',
     dockerfile='./services/catalog/Dockerfile'
 )
 
