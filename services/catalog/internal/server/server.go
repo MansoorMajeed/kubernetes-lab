@@ -2,27 +2,34 @@ package server
 
 import (
 	"database/sql"
+	"fmt"
+	"net"
 	"strconv"
 	"time"
 
+	"catalog-service/internal/grpc"
 	"catalog-service/internal/handlers"
 	"catalog-service/internal/logger"
 	"catalog-service/internal/metrics"
 	"catalog-service/internal/models"
 	"catalog-service/internal/services"
 
+	catalogpb "github.com/mansoormajeed/kubernetes-lab/proto/catalog"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/trace"
+	grpcServer "google.golang.org/grpc"
 )
 
-// Server represents the HTTP server
+// Server represents the HTTP and gRPC server
 type Server struct {
-	router  *gin.Engine
-	db      *sql.DB
-	metrics *metrics.HTTPMetrics
+	router     *gin.Engine
+	grpcServer *grpcServer.Server
+	db         *sql.DB
+	metrics    *metrics.HTTPMetrics
 }
 
 // NewServer creates a new server instance
@@ -39,10 +46,21 @@ func NewServer(database *sql.DB) *Server {
 	// Initialize metrics
 	httpMetrics := metrics.NewHTTPMetrics()
 
+	// Create gRPC server with OpenTelemetry instrumentation
+	grpcSrv := grpcServer.NewServer(
+		grpcServer.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
+		grpcServer.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
+	)
+
+	// Register gRPC service
+	catalogGRPCServer := grpc.NewCatalogGRPCServer(database)
+	catalogpb.RegisterCatalogServiceServer(grpcSrv, catalogGRPCServer)
+
 	server := &Server{
-		router:  router,
-		db:      database,
-		metrics: httpMetrics,
+		router:     router,
+		grpcServer: grpcSrv,
+		db:         database,
+		metrics:    httpMetrics,
 	}
 
 	// Add middleware in order:
@@ -180,15 +198,44 @@ func (s *Server) setupRoutes() {
 	}
 }
 
-// Start starts the HTTP server
+// Start starts both HTTP and gRPC servers
 func (s *Server) Start(port string) error {
+	httpPort := port
+	grpcPort := "9090" // Fixed gRPC port
+	
+	// Start gRPC server in a goroutine
+	go func() {
+		logger.WithFields(logrus.Fields{
+			"component": "server",
+			"action":    "start_grpc",
+			"port":      grpcPort,
+		}).Info("Starting gRPC server")
+
+		lis, err := net.Listen("tcp", ":"+grpcPort)
+		if err != nil {
+			logger.WithError(err).WithFields(logrus.Fields{
+				"component": "server",
+				"action":    "start_grpc",
+				"port":      grpcPort,
+			}).Fatal("Failed to listen on gRPC port")
+		}
+
+		if err := s.grpcServer.Serve(lis); err != nil {
+			logger.WithError(err).WithFields(logrus.Fields{
+				"component": "server",
+				"action":    "start_grpc",
+			}).Fatal("Failed to start gRPC server")
+		}
+	}()
+
+	// Start HTTP server
 	logger.WithFields(logrus.Fields{
 		"component": "server",
-		"action":    "start",
-		"port":      port,
-	}).Info("Starting server")
+		"action":    "start_http",
+		"port":      httpPort,
+	}).Info("Starting HTTP server")
 
-	return s.router.Run(":" + port)
+	return s.router.Run(":" + httpPort)
 }
 
 // Stop gracefully stops the server

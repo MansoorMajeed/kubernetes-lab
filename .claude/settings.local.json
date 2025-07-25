@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push:*)",
+      "Bash(gh issue create:*)",
+      "Bash(git add:*)",
+      "Bash(./tilt-lab up)",
+      "Bash(./setup-lab.sh:*)",
+      "Bash(./kubectl-lab get pods -n cart)",
+      "Bash(./kubectl-lab logs -n cart deployment/redis --tail=10)",
+      "Bash(git commit:*)",
+      "Bash(mkdir:*)",
+      "Bash(protoc:*)"
+    ],
+    "deny": []
+  }
+}
