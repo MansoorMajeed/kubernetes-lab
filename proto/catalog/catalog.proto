@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package catalog;
+
+option go_package = "github.com/mansoormajeed/kubernetes-lab/proto/catalog";
+
+// CatalogService provides fast product validation and price fetching for cart operations
+service CatalogService {
+  // ValidateProduct checks if a product exists and is available for purchase
+  rpc ValidateProduct(ProductValidationRequest) returns (ProductValidationResponse);
+  
+  // GetProductPrice fetches current product price for cart calculations
+  rpc GetProductPrice(ProductPriceRequest) returns (ProductPriceResponse);
+  
+  // ValidateCartItems validates multiple products in a single call for efficiency
+  rpc ValidateCartItems(CartValidationRequest) returns (CartValidationResponse);
+}
+
+// Product validation request
+message ProductValidationRequest {
+  string product_id = 1;
+  int32 quantity = 2;  // Requested quantity for inventory checking
+}
+
+// Product validation response
+message ProductValidationResponse {
+  bool valid = 1;
+  bool in_stock = 2;
+  int32 available_quantity = 3;
+  string product_name = 4;
+  double price = 5;
+  string error_message = 6;  // Error details if validation fails
+}
+
+// Product price request
+message ProductPriceRequest {
+  string product_id = 1;
+}
+
+// Product price response
+message ProductPriceResponse {
+  bool found = 1;
+  double price = 2;
+  string currency = 3;
+  string error_message = 4;  // Error details if product not found
+}
+
+// Cart validation request for multiple items
+message CartValidationRequest {
+  repeated CartItem items = 1;
+}
+
+// Individual cart item for validation
+message CartItem {
+  string product_id = 1;
+  int32 quantity = 2;
+}
+
+// Cart validation response
+message CartValidationResponse {
+  repeated ProductValidationResponse results = 1;
+  bool all_valid = 2;
+  double total_price = 3;
+  string currency = 4;
+}
