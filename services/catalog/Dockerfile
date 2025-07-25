@@ -7,17 +7,14 @@ WORKDIR /app
 # Copy proto files (needed for local replace directive)
 COPY proto ./proto
 
-# Copy go mod files
-COPY services/catalog/go.mod services/catalog/go.sum ./
+# Copy catalog service source code first
+COPY services/catalog .
 
 # Update go.mod to use local proto path for Docker context
 RUN sed -i 's|=> ../../proto/catalog|=> ./proto/catalog|g' go.mod
 
 # Download dependencies
 RUN go mod download
-
-# Copy catalog service source code
-COPY services/catalog .
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o catalog-service .
