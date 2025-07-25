@@ -18,7 +18,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/trace"
 	grpcServer "google.golang.org/grpc"
 )
@@ -45,11 +44,8 @@ func NewServer(database *sql.DB) *Server {
 	// Initialize metrics
 	httpMetrics := metrics.NewHTTPMetrics()
 
-	// Create gRPC server with OpenTelemetry instrumentation
-	grpcSrv := grpcServer.NewServer(
-		grpcServer.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
-		grpcServer.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
-	)
+	// Create gRPC server (OpenTelemetry instrumentation added separately)
+	grpcSrv := grpcServer.NewServer()
 
 	// Register gRPC service
 	catalogGRPCServer := grpc.NewCatalogGRPCServer(database)

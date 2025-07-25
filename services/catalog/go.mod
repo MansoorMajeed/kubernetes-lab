@@ -17,7 +17,7 @@ require (
 	google.golang.org/grpc v1.73.0
 )
 
-replace github.com/mansoormajeed/kubernetes-lab/proto/catalog => ./proto/catalog
+replace github.com/mansoormajeed/kubernetes-lab/proto/catalog => ../../proto/catalog
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect

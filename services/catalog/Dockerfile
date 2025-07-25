@@ -7,8 +7,11 @@ WORKDIR /app
 # Copy proto files (needed for local replace directive)
 COPY proto ./proto
 
-# Copy catalog service files
+# Copy go mod files
 COPY services/catalog/go.mod services/catalog/go.sum ./
+
+# Update go.mod to use local proto path for Docker context
+RUN sed -i 's|=> ../../proto/catalog|=> ./proto/catalog|g' go.mod
 
 # Download dependencies
 RUN go mod download
