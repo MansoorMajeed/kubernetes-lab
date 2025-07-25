@@ -92,6 +92,14 @@ k8s_yaml('k8s/apps/catalog/deployment.yaml')
 k8s_yaml('k8s/apps/catalog/service.yaml')
 k8s_yaml('k8s/apps/catalog/ingress.yaml')
 
+### Cart Service Setup
+
+# Create cart namespace
+k8s_yaml('k8s/apps/cart/namespace.yaml')
+
+# Deploy Redis database
+k8s_yaml('k8s/apps/cart/redis.yaml')
+
 ### Frontend Service Setup
 
 # Create frontend namespace
