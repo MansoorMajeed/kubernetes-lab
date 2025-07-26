@@ -4,14 +4,17 @@ FROM golang:1.24-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy go mod files
-COPY go.mod go.sum ./
+# Copy proto files (needed for local replace directive)
+COPY proto ./proto
+
+# Copy catalog service source code first
+COPY services/catalog .
+
+# Update go.mod to use local proto path for Docker context
+RUN sed -i 's|=> ../../proto/catalog|=> ./proto/catalog|g' go.mod
 
 # Download dependencies
 RUN go mod download
-
-# Copy source code
-COPY . .
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o catalog-service .

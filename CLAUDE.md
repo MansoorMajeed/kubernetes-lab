@@ -166,6 +166,39 @@ Add to `/etc/hosts`:
 | **Catalog API** | [catalog.kubelab.lan:8081](http://catalog.kubelab.lan:8081) | Product API |
 | **Tilt UI** | [localhost:10350](http://localhost:10350) | Deployment management |
 
+## 💬 **Communication & Attribution Guidelines**
+
+### **GitHub Comments & PR Interactions**
+When making comments, reviews, or responses on behalf of Mansoor, always use proper attribution:
+
+**Standard Format**: `[Claude via Mansoor]`
+
+**Usage Examples**:
+- **PR Comments**: `[Claude via Mansoor] - Fixed the build issue by removing problematic gRPC interceptors...`
+- **Code Reviews**: `[Claude via Mansoor] - Good catch! Updated the error handling to follow established patterns...`
+- **Issue Responses**: `[Claude via Mansoor] - Implementation complete. The cart service now includes...`
+- **Short Format**: `[Claude/MM] - Quick fix applied.`
+
+**Why This Matters**:
+- **Transparency**: Clear AI involvement in development process
+- **Professional Standards**: Honest about AI assistance rather than hiding it
+- **Educational Value**: Shows modern AI-human collaborative development
+- **Proper Attribution**: Distinguishes human oversight from AI implementation
+
+### **Critical Technical Reminder** ⚠️
+**ALWAYS write GitHub comments to a file first, then use `--body-file`**:
+
+```bash
+# WRONG (causes shell interpolation issues)
+gh pr comment 10 --body "Complex text with $variables and `backticks`"
+
+# CORRECT (write to file first)
+echo "Complex text..." > /tmp/comment.md
+gh pr comment 10 --body-file /tmp/comment.md
+```
+
+**Reason**: Shell interpolation in heredocs and quoted strings frequently causes errors with complex markdown, code blocks, and special characters. This issue occurs repeatedly and should always be avoided by using file-based approach.
+
 ---
 
 *Generated for Claude Code Assistant - Last updated: 2025-01-25*

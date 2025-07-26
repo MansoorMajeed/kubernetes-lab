@@ -80,10 +80,10 @@ k8s_yaml('k8s/apps/catalog/namespace.yaml')
 # Deploy PostgreSQL database
 k8s_yaml('k8s/apps/catalog/postgres.yaml')
 
-# Build catalog service Docker image
+# Build catalog service Docker image (from project root to include proto)
 docker_build(
     'catalog-service:latest',
-    './services/catalog',
+    '.',
     dockerfile='./services/catalog/Dockerfile'
 )
 
@@ -91,6 +91,24 @@ docker_build(
 k8s_yaml('k8s/apps/catalog/deployment.yaml')
 k8s_yaml('k8s/apps/catalog/service.yaml')
 k8s_yaml('k8s/apps/catalog/ingress.yaml')
+
+### Cart Service Setup
+
+# Create cart namespace
+k8s_yaml('k8s/apps/cart/namespace.yaml')
+
+# Deploy Redis database
+k8s_yaml('k8s/apps/cart/redis.yaml')
+
+# Build cart service Docker image (from project root to include proto)
+docker_build(
+    'cart-service:latest',
+    '.',
+    dockerfile='./services/cart/Dockerfile'
+)
+
+# Deploy cart service
+k8s_yaml('k8s/apps/cart/cart-deployment.yaml')
 
 ### Frontend Service Setup
 
