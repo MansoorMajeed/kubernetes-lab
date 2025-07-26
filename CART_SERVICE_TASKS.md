@@ -9,44 +9,44 @@
 **Goal**: Working cart service with Redis storage (no external dependencies)
 
 ### 1. Basic Cart Models & Redis Storage
-- [ ] 1.1 Define Cart and CartItem structs
-- [ ] 1.2 Implement Redis connection and CRUD operations
-- [ ] 1.3 Session-based cart management (with TTL)
-- [ ] 1.4 Basic cart business logic (add, remove, update quantity)
-- [ ] 1.5 **Test**: Local Redis operations work correctly
-- [ ] 1.6 **Test**: Data persistence and TTL behavior
-- [ ] 1.7 **Commit**: Basic cart models and Redis storage
+- [x] 1.1 Define Cart and CartItem structs
+- [x] 1.2 Implement Redis connection and CRUD operations
+- [x] 1.3 Session-based cart management (with TTL)
+- [x] 1.4 Basic cart business logic (add, remove, update quantity)
+- [x] 1.5 **Test**: Local Redis operations work correctly
+- [x] 1.6 **Test**: Data persistence and TTL behavior
+- [x] 1.7 **Commit**: Basic cart models and Redis storage
 
 ### 2. Minimal REST Handlers
-- [ ] 2.1 Create basic REST endpoint handlers
-  - [ ] 2.1.1 `POST /api/v1/cart/items` - Add item
-  - [ ] 2.1.2 `GET /api/v1/cart` - Get cart contents  
-  - [ ] 2.1.3 `PUT /api/v1/cart/items/{id}` - Update quantity
-  - [ ] 2.1.4 `DELETE /api/v1/cart/items/{id}` - Remove item
-  - [ ] 2.1.5 `DELETE /api/v1/cart` - Clear cart
-- [ ] 2.2 Basic JSON request/response handling
-- [ ] 2.3 Simple error responses (no validation yet)
-- [ ] 2.4 **Test**: curl commands against all endpoints
-- [ ] 2.5 **Test**: JSON responses are well-formed
-- [ ] 2.6 **Commit**: Minimal REST API handlers
+- [x] 2.1 Create basic REST endpoint handlers
+  - [x] 2.1.1 `POST /api/v1/cart/items` - Add item
+  - [x] 2.1.2 `GET /api/v1/cart` - Get cart contents  
+  - [x] 2.1.3 `PUT /api/v1/cart/items/{id}` - Update quantity
+  - [x] 2.1.4 `DELETE /api/v1/cart/items/{id}` - Remove item
+  - [x] 2.1.5 `DELETE /api/v1/cart` - Clear cart
+- [x] 2.2 Basic JSON request/response handling
+- [x] 2.3 Simple error responses (no validation yet)
+- [x] 2.4 **Test**: curl commands against all endpoints
+- [x] 2.5 **Test**: JSON responses are well-formed
+- [x] 2.6 **Commit**: Minimal REST API handlers
 
 ### 3. HTTP Server Setup
-- [ ] 3.1 Gin router configuration
-- [ ] 3.2 Basic middleware (logging, CORS)
-- [ ] 3.3 Health check endpoint (`/health`)
-- [ ] 3.4 Metrics endpoint (`/metrics`)
-- [ ] 3.5 **Test**: Server starts successfully
-- [ ] 3.6 **Test**: Health endpoint returns 200
-- [ ] 3.7 **Test**: All routes are registered correctly
-- [ ] 3.8 **Commit**: HTTP server setup with basic endpoints
+- [x] 3.1 Gin router configuration
+- [x] 3.2 Basic middleware (logging, CORS)
+- [x] 3.3 Health check endpoint (`/health`)
+- [x] 3.4 Metrics endpoint (`/metrics`)
+- [x] 3.5 **Test**: Server starts successfully
+- [x] 3.6 **Test**: Health endpoint returns 200
+- [x] 3.7 **Test**: All routes are registered correctly
+- [x] 3.8 **Commit**: HTTP server setup with basic endpoints
 
 ### 4. Test & Deploy Basic Version
-- [ ] 4.1 Local testing with Redis running
-- [ ] 4.2 Create minimal Kubernetes deployment manifests
-- [ ] 4.3 Create service definition
-- [ ] 4.4 Update Tiltfile for cart service
-- [ ] 4.5 **Test**: Local build works (`go build .`)
-- [ ] 4.6 **Test**: Docker build succeeds
+- [x] 4.1 Local testing with Redis running
+- [x] 4.2 Create minimal Kubernetes deployment manifests
+- [x] 4.3 Create service definition
+- [x] 4.4 Update Tiltfile for cart service
+- [x] 4.5 **Test**: Local build works (`go build .`)
+- [x] 4.6 **Test**: Docker build succeeds (fixed permissions)
 - [ ] 4.7 **Test**: Deploy to cluster
 - [ ] 4.8 **Test**: Service accessible via ingress
 - [ ] 4.9 **Test**: Basic cart operations work in cluster
@@ -132,8 +132,8 @@
 4. ✅ **Deployment Test** - Works in Kubernetes environment
 5. ✅ **Commit & Push** - Only after all tests pass
 
-**Current Status**: Ready to begin Task 1.1
+**Current Status**: Phase 1 Complete! Now testing deployment (Task 4.7)
 
 ---
 
-**Next Action**: Start with Task 1.1 - Define Cart and CartItem structs
+**Next Action**: Test deployment to cluster (Task 4.7) - check if Tilt rebuilds cart service
