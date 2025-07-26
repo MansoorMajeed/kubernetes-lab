@@ -3,47 +3,36 @@ package main
 import (
 	"os"
 
-	"cart-service/internal/logger"
 	"cart-service/internal/redis"
 	"cart-service/internal/server"
-	"cart-service/internal/tracing"
 
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	// Initialize OpenTelemetry tracing
-	cleanup, err := tracing.Setup("cart-service")
-	if err != nil {
-		logger.WithError(err).WithFields(logrus.Fields{
-			"component": "tracing",
-			"action":    "setup",
-		}).Fatal("Failed to initialize tracing")
-	}
-	defer cleanup()
+	// Create logger
+	logger := logrus.New()
+	logger.SetLevel(logrus.InfoLevel)
+	logger.SetFormatter(&logrus.JSONFormatter{})
 
 	logger.WithFields(logrus.Fields{
-		"component": "tracing",
-		"action":    "initialize",
-	}).Info("OpenTelemetry tracing initialized")
+		"component": "main",
+		"action":    "start",
+		"service":   "cart-service",
+	}).Info("Starting cart service")
 
-	// Get Redis connection
-	redisClient, err := redis.Connect()
+	// Create Redis client
+	redisClient, err := redis.NewClient(logger)
 	if err != nil {
 		logger.WithError(err).WithFields(logrus.Fields{
-			"component": "redis",
-			"action":    "connect",
+			"component": "main",
+			"action":    "redis_connect",
 		}).Fatal("Failed to connect to Redis")
 	}
 	defer redisClient.Close()
 
-	logger.WithFields(logrus.Fields{
-		"component": "redis",
-		"action":    "connect",
-	}).Info("Connected to Redis")
-
-	// Create server with Redis client
-	srv := server.NewServer(redisClient)
+	// Create and start server
+	srv := server.NewServer(redisClient.Client, logger)
 
 	// Get port from environment or use default
 	port := os.Getenv("PORT")
@@ -51,17 +40,16 @@ func main() {
 		port = "8080"
 	}
 
-	// Start server
 	logger.WithFields(logrus.Fields{
-		"component": "server",
-		"action":    "start",
+		"component": "main",
+		"action":    "server_start",
 		"port":      port,
-	}).Info("Starting cart service")
+	}).Info("Starting HTTP server")
 
 	if err := srv.Start(port); err != nil {
 		logger.WithError(err).WithFields(logrus.Fields{
-			"component": "server",
-			"action":    "start",
+			"component": "main",
+			"action":    "server_start",
 		}).Fatal("Failed to start server")
 	}
 }
