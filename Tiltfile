@@ -100,6 +100,16 @@ k8s_yaml('k8s/apps/cart/namespace.yaml')
 # Deploy Redis database
 k8s_yaml('k8s/apps/cart/redis.yaml')
 
+# Build cart service Docker image (from project root to include proto)
+docker_build(
+    'cart-service:latest',
+    '.',
+    dockerfile='./services/cart/Dockerfile'
+)
+
+# Deploy cart service
+k8s_yaml('k8s/apps/cart/cart-deployment.yaml')
+
 ### Frontend Service Setup
 
 # Create frontend namespace

@@ -20,7 +20,16 @@
       "Bash(./kubectl-lab describe pod -n catalog catalog-6d5749f99b-j2w26)",
       "Bash(./kubectl-lab get pods -n catalog -w)",
       "Bash(go mod:*)",
-      "Bash(go build:*)"
+      "Bash(go build:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr review:*)",
+      "Bash(./kubectl-lab get events -n catalog --sort-by='.lastTimestamp')",
+      "Bash(./kubectl-lab logs -n catalog pod/catalog-5f7dd9f9b6-gqz5w)",
+      "Bash(redis-cli:*)",
+      "Bash(REDIS_HOST=localhost REDIS_PORT=6379 go run test_redis.go)",
+      "Bash(ls:*)",
+      "Bash(REDIS_HOST=localhost REDIS_PORT=6379 go run test_ttl.go)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }
